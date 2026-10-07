@@ -6,23 +6,12 @@ const app = express();
 
 dotenv.config();
 connectDB();
-
 app.use(cors());
 app.use(express.json());
 
+const authRoutes = require("./routes/authRoutes");
 
-app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "AI Student Analytics API is running",
-  });
-});
-app.get("/api/health", (req, res) => {
-  res.json({
-    success: true,
-    message: "Server is healthy",
-  });
-});
+app.use("/api/auth", authRoutes);
 
 const PORT = process.env.PORT || 5000;
 
