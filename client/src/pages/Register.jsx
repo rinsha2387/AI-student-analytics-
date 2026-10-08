@@ -1,6 +1,11 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+
 
 const Register = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -18,26 +23,87 @@ const Register = () => {
     });
   };
 
-  const handleSendOTP = (e) => {
-    e.preventDefault();
+  const handleSendOTP = async (e) => {
+  e.preventDefault();
 
-    console.log("Registration OTP:", {
-      ...formData,
-      role: "manager",
-    });
+  try {
+    const response = await fetch(
+      "http://localhost:5000/api/auth/register/send-otp",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          institution: {
+            name: formData.institutionName,
+            city: formData.city,
+          },
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.message || "Failed to send OTP");
+      return;
+    }
+
+    console.log("OTP response:", data);
+
+    alert("OTP sent successfully. Check the server terminal.");
 
     setOtpSent(true);
-  };
+  } catch (error) {
+    console.error("Send OTP Error:", error);
+    alert("Unable to connect to the server.");
+  }
+};
 
-  const handleVerifyOTP = (e) => {
-    e.preventDefault();
+  const handleVerifyOTP = async (e) => {
+  e.preventDefault();
 
-    console.log("Verify Registration OTP:", {
-      ...formData,
-      otp,
-      role: "manager",
-    });
-  };
+  try {
+    const response = await fetch(
+      "http://localhost:5000/api/auth/register/verify-otp",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          institution: {
+            name: formData.institutionName,
+            city: formData.city,
+          },
+          otp: otp,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.message || "OTP verification failed");
+      return;
+    }
+
+    console.log("Registration successful:", data);
+
+    // Save authentication data
+    login(data.token, data.user);
+    alert("Account created successfully!");
+    navigate("/manager/dashboard");
+  } catch (error) {
+    console.error("Verify OTP Error:", error);
+    alert("Unable to connect to the server.");
+  }
+};
 
   return (
     <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-white flex">

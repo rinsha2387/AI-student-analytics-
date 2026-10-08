@@ -2,9 +2,6 @@ const User = require("../models/User");
 const OTP = require("../models/OTP");
 const jwt = require("jsonwebtoken");
 
-// ==========================================
-// Generate JWT Token
-// ==========================================
 const generateToken = (user) => {
   return jwt.sign(
     {
@@ -18,16 +15,12 @@ const generateToken = (user) => {
   );
 };
 
-// ==========================================
-// Generate 6 Digit OTP
-// ==========================================
+
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-// ==========================================
-// REGISTER - SEND OTP
-// ==========================================
+
 const sendRegisterOTP = async (req, res) => {
   try {
     const {
