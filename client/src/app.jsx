@@ -7,6 +7,9 @@ import {
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ManagerDashboard from "./pages/manager/Dashboard";
+import AdminDashboard  from "./pages/admin/Dashboard";
+
 
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
@@ -17,50 +20,31 @@ function App() {
       <BrowserRouter>
         <Routes>
 
-          {/* ==============================
-              Authentication Pages
-          ============================== */}
 
           <Route
             path="/login"
             element={<Login />}
           />
 
-          <Route
-            path="/register"
-            element={<Register />}
-          />
-
-          {/* ==============================
-              Manager Dashboard
-          ============================== */}
+          <Route path="/register" element={<Register />}/>
 
           <Route
             path="/manager/dashboard"
             element={
               <ProtectedRoute allowedRoles={["manager"]}>
-                <h1>Manager Dashboard</h1>
+               <ManagerDashboard/>
               </ProtectedRoute>
             }
           />
-
-          {/* ==============================
-              Admin Dashboard
-          ============================== */}
 
           <Route
             path="/admin/dashboard"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <h1>Admin Dashboard</h1>
+                <AdminDashboard/>
               </ProtectedRoute>
             }
           />
-
-          {/* ==============================
-              Default Route
-          ============================== */}
-
           <Route
             path="*"
             element={
