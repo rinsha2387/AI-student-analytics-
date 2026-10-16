@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from "react";
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
@@ -326,54 +325,7 @@ const UploadDataset = () => {
               </div>
             )}
 
-            {/* Template section */}
-            <div className="mt-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-              <div className="flex items-start gap-3">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="mt-0.5 h-7 w-7 shrink-0 text-[#6177e8]"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                >
-                  <path
-                    d="M6 3h8l5 5v13H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"
-                    strokeLinejoin="round"
-                  />
-                  <path d="M14 3v5h5M8 13h8M8 17h8" />
-                </svg>
-
-                <div>
-                  <h3 className="text-sm font-semibold text-[#1b3154]">
-                    Need a starting point?
-                  </h3>
-                  <p className="mt-1 text-sm text-[#8795ad]">
-                    Use our sample template to format your data.
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={downloadTemplate}
-                className="inline-flex shrink-0 items-center gap-2 self-start text-sm font-semibold text-[#5268d8] transition hover:text-[#3549b5] sm:self-center"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="h-5 w-5"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                >
-                  <path
-                    d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v3h14v-3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                Download template
-              </button>
-            </div>
+          
 
             {/* Continue button - frontend only */}
             {selectedFile && (
@@ -490,26 +442,7 @@ const UploadDataset = () => {
                 relevant and authorized.
               </p>
 
-              <button
-                type="button"
-                onClick={downloadTemplate}
-                className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#5268d8] transition hover:text-[#3549b5]"
-              >
-                Get the sample template
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="h-4 w-4"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                >
-                  <path
-                    d="M5 12h14m-6-6 6 6-6 6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
+              
             </section>
           </aside>
         </div>

@@ -411,7 +411,7 @@ export default function Dashboard() {
           {/* Page title */}
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[2px] text-indigo-500">
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#5268d8] ">
                 {new Date().toLocaleDateString("en-GB", {
                   weekday: "long",
                   day: "2-digit",
@@ -436,7 +436,7 @@ export default function Dashboard() {
               </Link>
               <button
                 onClick={loadDashboard}
-                className="rounded-lg bg-indigo-600 px-4 py-3 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700"
+                className="rounded-lg bg-[#5268d8] px-4 py-3 text-xs font-semibold text-white shadow-sm hover:bg-[#4358c6]"
               >
                 ↻ Refresh data
               </button>

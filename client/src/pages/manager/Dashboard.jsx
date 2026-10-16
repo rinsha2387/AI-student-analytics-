@@ -1,16 +1,11 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import ManagerSidebar from "../../components/manager/ManagerSidebar";
-import ManagerTopbar from "../../components/manager/ManagerTopbar";
-import ManagerFooter from "../../components/manager/ManagerFooter"
 
 const ManagerDashboard = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
-  const [activeMenu, setActiveMenu] = useState("Dashboard");
-  const [search, setSearch] = useState("");
 
   const managerName = user?.name || "Manager";
   const institutionName = user?.institutionName || user?.institution?.name || "Your Institution";
@@ -26,91 +21,30 @@ const ManagerDashboard = () => {
     }).format(new Date());
   }, []);
 
-  
 
-  const menuGroups = [
-    {
-      title: "OVERVIEW",
-      items: [
-        {
-          name: "Dashboard",
-          icon: "dashboard",
-        },
-        {
-          name: "Upload Data",
-          icon: "upload",
-        },
-        {
-          name: "AI Analysis",
-          icon: "ai",
-        },
-      ],
-    },
 
-    {
-      title: "ANALYTICS",
-      items: [
-        {
-          name: "High-Risk Students",
-          icon: "risk",
-          badge: "87",
-        },
-        {
-          name: "Student Insights",
-          icon: "students",
-        },
-        {
-          name: "Behavior Insights",
-          icon: "behavior",
-        },
-        {
-          name: "Academic Analytics",
-          icon: "academic",
-        },
-        {
-          name: "Attendance Analytics",
-          icon: "attendance",
-        },
-        {
-          name: "Financial Impact",
-          icon: "financial",
-        },
-      ],
-    },
+const handleMenuClick = (item) => {
+  const routes = {
+    Dashboard: "/manager/dashboard",
+    "Upload Data": "/manager/upload-data",
+    "AI Analysis": "/manager/ai-analysis",
+    "High-Risk Students": "/manager/high-risk-students",
+    "Student Insights": "/manager/student-insights",
+    "Behavior Insights": "/manager/behavior-insights",
+    "Academic Analytics": "/manager/academic-analytics",
+    "Attendance Analytics": "/manager/attendance-analytics",
+    "Financial Impact": "/manager/financial-impact",
+    Reports: "/manager/reports",
+    "Analysis History": "/manager/analysis-history",
+    Settings: "/manager/settings",
+  };
 
-    {
-      title: "WORKSPACE",
-      items: [
-        {
-          name: "Reports",
-          icon: "reports",
-        },
-        {
-          name: "Analysis History",
-          icon: "history",
-        },
-        {
-          name: "Settings",
-          icon: "settings",
-        },
-      ],
-    },
-  ];
+  const path = routes[item.name];
+
+  if (path) navigate(path);
+};
 
  
-
-  const handleMenuClick = (item) => {
-    setActiveMenu(item.name);
-
-    // Dashboard
-    if (item.name === "Dashboard") {
-      navigate("/manager/dashboard");
-      return;
-    }
-
-    // These pages will be created later.
-    console.log(`${item.name} page will be created next.`);
-  };
 
   const handleLogout = () => {
     logout();
@@ -470,29 +404,10 @@ const ManagerDashboard = () => {
   return (
     <div className="min-h-screen bg-[#f7f8fc] text-[#172b4d]">
     
-      <ManagerSidebar
-        activeMenu={activeMenu}
-        onMenuClick={handleMenuClick}
-        managerName={managerName}
-        institutionName={institutionName}
-        onLogout={handleLogout}
-       />
-
-   
-
-      <main className="lg:ml-[288px]">
      
-        <ManagerTopbar
-           managerName={managerName}
-           search={search}
-           setSearch={setSearch}
-           activeMenu={activeMenu}
-        />
 
-
+      <main>
         <div className="px-5 py-7 lg:px-11">
-        
-
           <section className="mb-8 flex flex-col justify-between gap-5 xl:flex-row xl:items-end">
             <div>
               <p className="mb-3 text-[11px] font-semibold uppercase tracking-[1.5px] text-[#6379dc]">
@@ -510,7 +425,7 @@ const ManagerDashboard = () => {
 
             <div className="flex gap-3">
               <button
-                onClick={() => setActiveMenu("Reports")}
+               onClick={() => handleMenuClick({ name: "Reports" })}
                 className="flex items-center gap-2 rounded-lg border border-[#dfe4ed] bg-white px-4 py-2.5 text-[12px] font-semibold text-[#344867] shadow-sm hover:bg-[#fafbfc]"
               >
                 <Icon type="reports" size={17} />
@@ -518,7 +433,7 @@ const ManagerDashboard = () => {
               </button>
 
               <button
-                onClick={() => setActiveMenu("AI Analysis")}
+                onClick={() => handleMenuClick({ name: "AI Analysis" })}
                 className="flex items-center gap-2 rounded-lg bg-[#5268d8] px-4 py-2.5 text-[12px] font-semibold text-white shadow-[0_5px_14px_rgba(82,104,216,0.25)] hover:bg-[#465bc5]"
               >
                 <span className="text-lg leading-none">+</span>
@@ -750,7 +665,13 @@ const ManagerDashboard = () => {
                           </p>
 
                           <button
-                            onClick={() => setActiveMenu(item.title)}
+                           onClick={() => handleMenuClick({
+                                  name: item.title === "Students requiring review"
+                                  ? "High-Risk Students"
+                                  : item.title === "Performance trend detected"
+                                  ? "Academic Analytics"
+                                  : "Reports",
+                              })}
                             className="mt-2 flex items-center gap-1 text-[10px] font-semibold text-[#5268d8]"
                           >
                             {item.action}
@@ -784,7 +705,7 @@ const ManagerDashboard = () => {
                 </div>
 
                 <button
-                  onClick={() => setActiveMenu("Analysis History")}
+                  onClick={() => handleMenuClick({ name: "Analysis History" })}
                   className="flex items-center gap-1 text-[11px] font-semibold text-[#5268d8]"
                 >
                   View all
@@ -868,7 +789,7 @@ const ManagerDashboard = () => {
 
                         <td className="px-6 py-4 text-right">
                           <button
-                            onClick={() => setActiveMenu("Reports")}
+                            onClick={() => handleMenuClick({ name: "Reports" })}
                             className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#5268d8]"
                           >
                             View report
@@ -931,7 +852,7 @@ const ManagerDashboard = () => {
               </div>
 
               <button
-                onClick={() => setActiveMenu("Upload Data")}
+                onClick={() => handleMenuClick({ name: "Upload Data" })}
                 className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-[#5268d8] px-4 py-3 text-[11px] font-semibold text-white shadow-[0_5px_14px_rgba(82,104,216,0.22)] hover:bg-[#465bc5]"
               >
                 Upload student data
@@ -939,9 +860,6 @@ const ManagerDashboard = () => {
               </button>
             </div>
           </section>
-          
-          <ManagerFooter institutionName={institutionName} />
-
         </div>
       </main>
     </div>
