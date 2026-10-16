@@ -1,9 +1,4 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter, Routes,Route,Navigate,} from "react-router-dom";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -11,6 +6,7 @@ import ManagerDashboard from "./pages/manager/Dashboard";
 import AdminDashboard  from "./pages/admin/Dashboard";
 import UploadDataset from "./pages/manager/uploadDataset";
 import ManagerLayout from "./components/manager/ManagerLayout";
+import ManagementUsers from "./pages/admin/MangmentUsers";
 
 
 import ProtectedRoute from "./components/common/ProtectedRoute";
@@ -46,6 +42,7 @@ function App() {
               element={<UploadDataset />}
             />
           </Route>
+            
 
           {/* Admin route */}
           <Route
@@ -53,9 +50,17 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <AdminDashboard />
-              </ProtectedRoute>
+               </ProtectedRoute>
             }
           />
+          <Route
+            path="/admin/management-users"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+               <ManagementUsers />
+              </ProtectedRoute>
+              }
+           />
 
           {/* Fallback */}
           <Route

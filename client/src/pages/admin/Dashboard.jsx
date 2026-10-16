@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link ,useNavigate} from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import { adminService } from "../../services/adminService";
@@ -311,6 +311,32 @@ export default function Dashboard() {
   const { user, token } = useAuth();
   const [sections, setSections] = useState(initialSections);
 
+  const navigate = useNavigate();
+
+  const handleMenuClick = (item) => {
+    const routes = {
+      Dashboard: "/admin/dashboard",
+      "Management Users": "/admin/management-users",
+      "Student Data": "/admin/student-data",
+      "AI Prompts": "/admin/ai-prompts",
+      "AI Configuration": "/admin/ai-configuration",
+      "Analysis Configuration": "/admin/analysis-configuration",
+      "Processing Monitor": "/admin/processing-monitor",
+      Reports: "/admin/reports",
+      "Analysis History": "/admin/analysis-history",
+      "System Logs": "/admin/system-logs",
+      Settings: "/admin/settings",
+    };
+
+    const path = routes[item.name];
+
+    if (path) {
+      setActiveMenu(item.name);
+      navigate(path);
+    }
+  };
+
+
   const loadDashboard = useCallback(async () => {
     const requests = [
       ["stats", adminService.getStats],
@@ -399,7 +425,15 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#f6f7fb] text-slate-800">
-      <AdminSidebar />
+      <AdminSidebar
+        activeMenu={activeMenu}
+        onMenuClick={handleMenuClick}
+        adminName={user?.name || "System Admin"}
+        onLogout={() => {
+       // Replace this with your existing logout function.
+        navigate("/login");
+      }}
+      />
 
       <div className="min-h-screen md:ml-[260px]">
        <AdminTopbar
@@ -492,4 +526,5 @@ export default function Dashboard() {
       </div>
     </div>
   );
-}
+};
+

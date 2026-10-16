@@ -269,6 +269,116 @@ const getAdminDashboard = async (req, res) => {
   }
 };
 
+
+const getManagementUsers = async (req, res) => {
+  try {
+    const users = await User.find({})
+      .select("name email role institution isActive createdAt")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const totalUsers = users.length;
+    const activeUsers = users.filter(
+      (user) => user.isActive === true
+    ).length;
+    const adminAccounts = users.filter(
+      (user) => user.role === "admin"
+    ).length;
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        stats: {
+          totalUsers,
+          activeUsers,
+          adminAccounts,
+        },
+        users: users.map((user) => ({
+          _id: String(user._id),
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          institution: user.institution?.name || "Not provided",
+          isActive: user.isActive === true,
+          lastLogin: null,
+          createdAt: user.createdAt || null,
+        })),
+      },
+    });
+  } catch (error) {
+    console.error("Manage users error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to load users.",
+    });
+  }
+};
+
+const updateManagementUserStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isActive } = req.body;
+
+    if (typeof isActive !== "boolean") {
+      return res.status(400).json({
+        success: false,
+        message: "isActive must be true or false.",
+      });
+    }
+
+    if (!require("mongoose").isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID.",
+      });
+    }
+
+    const targetUser = await User.findById(id);
+
+    if (!targetUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    // Prevent accidental deactivation of the currently
+    // authenticated administrator.
+    if (
+      String(targetUser._id) === String(req.user._id) &&
+      isActive === false
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "You cannot deactivate your own account.",
+      });
+    }
+
+    targetUser.isActive = isActive;
+    await targetUser.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `User ${isActive ? "activated" : "deactivated"} successfully.`,
+      data: {
+        _id: String(targetUser._id),
+        isActive: targetUser.isActive,
+      },
+    });
+  } catch (error) {
+    console.error("Update user status error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update user status.",
+    });
+  }
+};
+
+
 module.exports = {
   getAdminDashboard,
+  getManagementUsers,
+  updateManagementUserStatus
 };
