@@ -7,6 +7,7 @@ import AdminDashboard  from "./pages/admin/Dashboard";
 import UploadDataset from "./pages/manager/uploadDataset";
 import ManagerLayout from "./components/manager/ManagerLayout";
 import ManagementUsers from "./pages/admin/MangmentUsers";
+import AIPrompts from "./pages/admin/AIPrompts";
 
 
 import ProtectedRoute from "./components/common/ProtectedRoute";
@@ -61,6 +62,15 @@ function App() {
               </ProtectedRoute>
               }
            />
+
+          <Route
+            path="/admin/ai-prompts"
+            element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AIPrompts />
+           </ProtectedRoute>
+            }
+          />
 
           {/* Fallback */}
           <Route
