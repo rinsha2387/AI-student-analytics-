@@ -1,10 +1,16 @@
 import React, { useRef, useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
 const ACCEPTED_EXTENSIONS = [".csv", ".xlsx", ".xls"];
 
 const UploadDataset = () => {
   const fileInputRef = useRef(null);
+
+  const { token } = useAuth();
+
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedDataset, setUploadedDataset] = useState(null);
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [dragging, setDragging] = useState(false);
@@ -17,9 +23,7 @@ const UploadDataset = () => {
 
     if (!file) return;
 
-    const extension = file.name
-      .slice(file.name.lastIndexOf("."))
-      .toLowerCase();
+    const extension = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
 
     if (!ACCEPTED_EXTENSIONS.includes(extension)) {
       setError("Please select a CSV, XLSX, or XLS file.");
@@ -52,10 +56,10 @@ const UploadDataset = () => {
 
   const removeFile = () => {
     setSelectedFile(null);
+    setUploadedDataset(null);
     setError("");
     setMessage("");
   };
-
   const downloadTemplate = () => {
     const headers = [
       "student_id",
@@ -81,9 +85,7 @@ const UploadDataset = () => {
 
     const csvContent = [headers, sampleRow]
       .map((row) =>
-        row
-          .map((value) => `"${String(value).replace(/"/g, '""')}"`)
-          .join(",")
+        row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(","),
       )
       .join("\r\n");
 
@@ -103,16 +105,62 @@ const UploadDataset = () => {
     URL.revokeObjectURL(url);
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!selectedFile) {
       setError("Please choose a dataset before continuing.");
       return;
     }
 
-    // Backend upload will be connected here later.
-    setMessage(
-      "File selected successfully. Backend upload is not connected yet."
-    );
+    if (!token) {
+      setError("Your session has expired. Please log in again.");
+      return;
+    }
+
+    setIsUploading(true);
+    setError("");
+    setMessage("");
+    setUploadedDataset(null);
+
+    try {
+      const formData = new FormData();
+
+      // This field name must match the backend upload middleware.
+      formData.append("file", selectedFile);
+
+      const response = await fetch("http://localhost:5000/api/dataset/upload", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Dataset upload failed.");
+      }
+
+      const dataset = data.dataset || data.data;
+      const datasetId = dataset?._id || data.datasetId;
+
+      if (!datasetId) {
+        throw new Error(
+          "Upload response did not contain a dataset ID. Check the backend response.",
+        );
+      }
+
+      setUploadedDataset({
+        ...dataset,
+        _id: datasetId,
+      });
+
+      setMessage(`Dataset uploaded successfully! Dataset ID: ${datasetId}`);
+    } catch (err) {
+      setError(err.message || "Unable to upload the dataset.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const formatFileSize = (bytes) => {
@@ -137,8 +185,8 @@ const UploadDataset = () => {
           </h1>
 
           <p className="mt-3 text-sm leading-6 text-[#8190aa] sm:text-base">
-            Add a student dataset to begin exploring meaningful,
-            evidence-based insights.
+            Add a student dataset to begin exploring meaningful, evidence-based
+            insights.
           </p>
         </div>
 
@@ -325,8 +373,6 @@ const UploadDataset = () => {
               </div>
             )}
 
-          
-
             {/* Continue button - frontend only */}
             {selectedFile && (
               <div className="mt-7 flex flex-col-reverse gap-3 border-t border-[#edf0f6] pt-5 sm:flex-row sm:justify-end">
@@ -341,9 +387,14 @@ const UploadDataset = () => {
                 <button
                   type="button"
                   onClick={handleUpload}
-                  className="rounded-xl bg-[#5268d8] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#4358c6]"
+                  disabled={isUploading || Boolean(uploadedDataset)}
+                  className="rounded-xl bg-[#5268d8] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#4358c6] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Continue with dataset
+                  {isUploading
+                    ? "Uploading dataset..."
+                    : uploadedDataset
+                      ? "Dataset uploaded"
+                      : "Continue with dataset"}
                 </button>
               </div>
             )}
@@ -437,12 +488,10 @@ const UploadDataset = () => {
               </div>
 
               <p className="text-sm leading-6 text-[#8291a9]">
-                Student IDs, attendance, marks, assignments, and other
-                available indicators. Include financial columns only if
-                relevant and authorized.
+                Student IDs, attendance, marks, assignments, and other available
+                indicators. Include financial columns only if relevant and
+                authorized.
               </p>
-
-              
             </section>
           </aside>
         </div>

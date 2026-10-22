@@ -308,7 +308,7 @@ function RecentActivity({ section }) {
 
 export default function Dashboard() {
   const [activeMenu, setActiveMenu] = useState("Dashboard");
-  const { user, token } = useAuth();
+  const { user, token,logout } = useAuth();
   const [sections, setSections] = useState(initialSections);
 
   const navigate = useNavigate();
@@ -319,7 +319,7 @@ export default function Dashboard() {
       "Management Users": "/admin/management-users",
       "Student Data": "/admin/student-data",
       "AI Prompts": "/admin/ai-prompts",
-      "AI Configuration": "/admin/ai-configuration",
+      "AI Configuration": "/admin/ai-config",
       "Analysis Configuration": "/admin/analysis-configuration",
       "Processing Monitor": "/admin/processing-monitor",
       Reports: "/admin/reports",
@@ -429,10 +429,7 @@ export default function Dashboard() {
         activeMenu={activeMenu}
         onMenuClick={handleMenuClick}
         adminName={user?.name || "System Admin"}
-        onLogout={() => {
-       // Replace this with your existing logout function.
-        navigate("/login");
-      }}
+        onLogout={logout}
       />
 
       <div className="min-h-screen md:ml-[260px]">

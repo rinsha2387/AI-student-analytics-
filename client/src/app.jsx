@@ -1,19 +1,17 @@
-import { BrowserRouter, Routes,Route,Navigate,} from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ManagerDashboard from "./pages/manager/Dashboard";
-import AdminDashboard  from "./pages/admin/Dashboard";
+import AdminDashboard from "./pages/admin/Dashboard";
 import UploadDataset from "./pages/manager/uploadDataset";
 import ManagerLayout from "./components/manager/ManagerLayout";
 import ManagementUsers from "./pages/admin/MangmentUsers";
 import AIPrompts from "./pages/admin/AIPrompts";
-
+import AIConfiguration from "./pages/admin/AIConfiguration";
 
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
-
-
 
 function App() {
   return (
@@ -33,17 +31,10 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route
-              path="dashboard"
-              element={<ManagerDashboard />}
-            />
+            <Route path="dashboard" element={<ManagerDashboard />} />
 
-            <Route
-              path="upload-data"
-              element={<UploadDataset />}
-            />
+            <Route path="upload-data" element={<UploadDataset />} />
           </Route>
-            
 
           {/* Admin route */}
           <Route
@@ -51,32 +42,37 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <AdminDashboard />
-               </ProtectedRoute>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/admin/management-users"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-               <ManagementUsers />
+                <ManagementUsers />
               </ProtectedRoute>
-              }
-           />
+            }
+          />
 
           <Route
             path="/admin/ai-prompts"
             element={
-            <ProtectedRoute allowedRoles={["admin"]}>
-              <AIPrompts />
-           </ProtectedRoute>
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AIPrompts />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/ai-config"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AIConfiguration />
+              </ProtectedRoute>
             }
           />
 
           {/* Fallback */}
-          <Route
-            path="*"
-            element={<Navigate to="/login" replace />}
-          />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

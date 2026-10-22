@@ -4,7 +4,6 @@ import { useAuth } from "../../context/AuthContext";
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading, isAuthenticated } = useAuth();
 
-  // Wait until authentication data is loaded
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -13,21 +12,32 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     );
   }
 
-  // Not logged in
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />;
   }
 
-  // Role restriction
+  // Check the user's role
   if (
     allowedRoles &&
-    !allowedRoles.includes(user?.role)
+    !allowedRoles.includes(user.role)
   ) {
-    if (user?.role === "admin") {
+    console.error(
+      "Protected route role mismatch:",
+      {
+        currentRole: user.role,
+        allowedRoles,
+      }
+    );
+
+    if (user.role === "admin") {
       return <Navigate to="/admin/dashboard" replace />;
     }
 
-    return <Navigate to="/manager/dashboard" replace />;
+    if (user.role === "manager") {
+      return <Navigate to="/manager/dashboard" replace />;
+    }
+
+    return <Navigate to="/login" replace />;
   }
 
   return children;

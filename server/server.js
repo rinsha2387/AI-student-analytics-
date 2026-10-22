@@ -12,12 +12,16 @@ app.use(express.json());
 const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const datasetRoutes = require("./routes/datasetRoutes");
-const aiPromptRoutes = require("./routes/aiPromptRoutes")
+const aiPromptRoutes = require("./routes/aiPromptRoutes");
+const analysisRoutes = require("./routes/analysisRoutes");
+const aiConfigurationRoutes = require("./routes/aiConfigurationRoutes")
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin",adminRoutes);
 app.use("/api/dataset",datasetRoutes);
 app.use("/api/admin/ai-prompt",aiPromptRoutes);
+app.use("/api/analysis" , analysisRoutes);
+app.use("/api/admin/ai-config", aiConfigurationRoutes);
 
 const PORT = process.env.PORT || 5000;
 

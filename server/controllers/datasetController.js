@@ -1,4 +1,3 @@
-
 const fs = require("fs/promises");
 const path = require("path");
 const Dataset = require("../models/Dataset");
@@ -18,7 +17,9 @@ const uploadDataset = async (req, res) => {
     uploadedFilePath = req.file.path;
 
     // Assumes your protect middleware sets req.user.
-    if (!req.user?._id) {
+    const managerId = req.user?._id || req.user?.id;
+
+    if (!managerId) {
       return res.status(401).json({
         success: false,
         message: "Authentication is required.",
@@ -32,10 +33,9 @@ const uploadDataset = async (req, res) => {
     const fileType = extension.slice(1);
 
     const dataset = await Dataset.create({
-      name: req.body.name?.trim() || path.basename(
-        req.file.originalname,
-        extension
-      ),
+      name:
+        req.body.name?.trim() ||
+        path.basename(req.file.originalname, extension),
       originalFileName: req.file.originalname,
       fileType,
       fileSize: req.file.size,
@@ -51,7 +51,7 @@ const uploadDataset = async (req, res) => {
       success: true,
       message: "Dataset uploaded and validated successfully.",
       dataset: {
-        id: dataset._id,
+        _id: dataset._id,
         name: dataset.name,
         originalFileName: dataset.originalFileName,
         fileType: dataset.fileType,

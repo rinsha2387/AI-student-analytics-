@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -59,6 +58,37 @@ Return one complete, structured JSON analysis.`,
   status: "active",
 };
 
+const getStatusStyles = (status) => {
+  switch (status) {
+    case "active":
+      return {
+        label: "Active",
+        badge: "bg-emerald-50 text-emerald-700",
+        dot: "bg-emerald-500",
+      };
+
+    case "inactive":
+      return {
+        label: "Inactive",
+        badge: "bg-red-50 text-red-700",
+        dot: "bg-red-500",
+      };
+
+    case "draft":
+      return {
+        label: "Draft",
+        badge: "bg-blue-50 text-blue-700",
+        dot: "bg-blue-500",
+      };
+
+    default:
+      return {
+        label: "Draft",
+        badge: "bg-blue-50 text-blue-700",
+        dot: "bg-blue-500",
+      };
+  }
+};
 export default function AIPrompts() {
   const navigate = useNavigate();
   const { user, token, logout } = useAuth();
@@ -111,7 +141,7 @@ export default function AIPrompts() {
     } catch (err) {
       setError(
         err.message ||
-          "Could not connect to the server. Check that your backend is running."
+          "Could not connect to the server. Check that your backend is running.",
       );
     } finally {
       setLoading(false);
@@ -183,9 +213,15 @@ export default function AIPrompts() {
   const handleSave = async () => {
     if (
       !formData.name.trim() ||
-      !formData.systemInstruction.trim()
+      !formData.systemInstruction.trim() ||
+      !formData.version.trim()
     ) {
-      setError("Prompt name and system instruction are required.");
+      setError("Prompt name, system instruction, and version are required.");
+      return;
+    }
+
+    if (!["active", "inactive", "draft"].includes(formData.status)) {
+      setError("Please select a valid prompt status.");
       return;
     }
 
@@ -210,6 +246,8 @@ export default function AIPrompts() {
           description: formData.description.trim(),
           systemInstruction: formData.systemInstruction.trim(),
           outputSections: formData.outputSections,
+          version: formData.version.trim(),
+          status: formData.status,
         }),
       });
 
@@ -283,8 +321,8 @@ export default function AIPrompts() {
           <section className="flex items-start gap-3 rounded-xl border border-amber-200 bg-[#fff9ee] p-4 text-sm text-[#a8732c]">
             <span className="text-lg">ⓘ</span>
             <p>
-              Changes to the master prompt affect future AI analyses.
-              Management users cannot view or edit these instructions.
+              Changes to the master prompt affect future AI analyses. Management
+              users cannot view or edit these instructions.
             </p>
           </section>
 
@@ -339,10 +377,19 @@ export default function AIPrompts() {
                     </p>
                   </div>
 
-                  <span className="inline-flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-600">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                    {prompt.status === "active" ? "Active" : "Inactive"}
-                  </span>
+                  {(() => {
+                    const status = getStatusStyles(prompt.status);
+                    return (
+                      <span
+                        className={`inline-flex items-center gap-2 rounded-md px-3 py-2 text-xs font-semibold ${status.badge}`}
+                      >
+                        <span
+                          className={`h-2 w-2 rounded-full ${status.dot}`}
+                        />
+                        {status.label}
+                      </span>
+                    );
+                  })()}
                 </div>
 
                 <div className="space-y-5 p-6">
@@ -401,8 +448,8 @@ export default function AIPrompts() {
                     />
 
                     <p className="mt-2 text-xs text-slate-400">
-                      Instructions guide the AI analysis. Do not include
-                      API keys or sensitive personal information here.
+                      Instructions guide the AI analysis. Do not include API
+                      keys or sensitive personal information here.
                     </p>
                   </div>
 
@@ -411,11 +458,15 @@ export default function AIPrompts() {
                       <label className="mb-2 block text-sm font-semibold">
                         Prompt version
                       </label>
-
                       <input
-                        value={prompt.version || "v1.0"}
-                        readOnly
-                        className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm"
+                        id="prompt-version"
+                        name="version"
+                        type="text"
+                        value={formData.version || ""}
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                        placeholder="e.g. v1.1"
+                        className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50"
                       />
                     </div>
 
@@ -424,11 +475,18 @@ export default function AIPrompts() {
                         Status
                       </label>
 
-                      <input
-                        value={prompt.status || "active"}
-                        readOnly
-                        className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm capitalize"
-                      />
+                      <select
+                        id="prompt-status"
+                        name="status"
+                        value={formData.status || "draft"}
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                        className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm capitalize outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50"
+                      >
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="draft">Draft</option>
+                      </select>
                     </div>
                   </div>
 
@@ -463,59 +521,6 @@ export default function AIPrompts() {
                       </button>
                     )}
                   </div>
-                </div>
-              </section>
-
-              {/* Output configuration */}
-              <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="mb-6">
-                  <h2 className="font-semibold text-[#1b3154]">
-                    AI Output Configuration
-                  </h2>
-
-                  <p className="mt-1 text-sm text-slate-400">
-                    Choose which sections the complete analysis should return.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-                  {OUTPUT_SECTIONS.map((section) => (
-                    <label
-                      key={section.key}
-                      className={`flex items-center gap-3 rounded-lg border border-slate-200 px-4 py-4 text-sm text-slate-600 ${
-                        isEditing
-                          ? "cursor-pointer hover:border-indigo-300"
-                          : "cursor-default"
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.outputSections.includes(section.key)}
-                        onChange={() => handleSectionChange(section.key)}
-                        disabled={!isEditing}
-                        className="h-4 w-4 accent-[#5268d8]"
-                      />
-
-                      {section.label}
-                    </label>
-                  ))}
-                </div>
-
-                <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5">
-                  <p className="text-xs text-slate-400">
-                    Financial insights are generated only when relevant fields exist.
-                  </p>
-
-                  {isEditing && (
-                    <button
-                      type="button"
-                      onClick={handleSave}
-                      disabled={saving}
-                      className="rounded-lg bg-[#5268d8] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#4355c4] disabled:opacity-50"
-                    >
-                      {saving ? "Saving..." : "Save Prompt & Preferences"}
-                    </button>
-                  )}
                 </div>
               </section>
             </>
