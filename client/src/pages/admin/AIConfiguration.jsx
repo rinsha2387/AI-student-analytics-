@@ -98,7 +98,7 @@ export default function AIConfiguration() {
       "Management Users": "/admin/management-users",
       "Student Data": "/admin/student-data",
       "AI Prompts": "/admin/ai-prompts",
-      "AI Configuration": "/admin/ai-configuration",
+      "AI Configuration": "/admin/ai-config",
       "Analysis Configuration": "/admin/analysis-configuration",
       "Processing Monitor": "/admin/processing-monitor",
       Reports: "/admin/reports",
