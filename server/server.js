@@ -23,7 +23,7 @@ app.use("/api/dataset",datasetRoutes);
 app.use("/api/admin/ai-prompt",aiPromptRoutes);
 app.use("/api/analysis" , analysisRoutes);
 app.use("/api/admin/ai-config", aiConfigurationRoutes);
-app.use("api/admin/analysis-config",analysisConfigurationRoutes);
+app.use("/api/admin/analysis-config",analysisConfigurationRoutes);
 
 const PORT = process.env.PORT || 5000;
 

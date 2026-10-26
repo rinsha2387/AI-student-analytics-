@@ -11,6 +11,8 @@ const UploadDataset = () => {
 
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedDataset, setUploadedDataset] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState(null);
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [dragging, setDragging] = useState(false);
@@ -160,6 +162,56 @@ const UploadDataset = () => {
       setError(err.message || "Unable to upload the dataset.");
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleRunAnalysis = async () => {
+    const datasetId = uploadedDataset?._id;
+
+    if (!datasetId) {
+      setError("Please upload a dataset before running AI analysis.");
+      return;
+    }
+
+    if (!token) {
+      setError("Your session has expired. Please log in again.");
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setError("");
+    setMessage("");
+    setAnalysisResult(null);
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/analysis/${encodeURIComponent(datasetId)}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "AI analysis failed.");
+      }
+
+      const result = data.analysis?.result;
+
+      if (!result) {
+        throw new Error("The analysis completed, but no result was returned.");
+      }
+
+      setAnalysisResult(result);
+      setMessage("AI analysis completed successfully.");
+    } catch (err) {
+      setError(err.message || "Unable to analyze this dataset.");
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 

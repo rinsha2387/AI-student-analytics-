@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const OTP = require("../models/OTP");
 const jwt = require("jsonwebtoken");
+const { sendOtpEmail } = require("../services/emailService");
 
 const generateToken = (user) => {
   return jwt.sign(
@@ -11,35 +12,23 @@ const generateToken = (user) => {
     process.env.JWT_SECRET,
     {
       expiresIn: "1d",
-    }
+    },
   );
 };
-
 
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-
 const sendRegisterOTP = async (req, res) => {
   try {
-    const {
-      name,
-      email,
-      institution,
-    } = req.body;
+    const { name, email, institution } = req.body;
 
     // Validate input
-    if (
-      !name ||
-      !email ||
-      !institution?.name ||
-      !institution?.city
-    ) {
+    if (!name || !email || !institution?.name || !institution?.city) {
       return res.status(400).json({
         success: false,
-        message:
-          "Name, email, institution name and city are required",
+        message: "Name, email, institution name and city are required",
       });
     }
 
@@ -74,14 +63,28 @@ const sendRegisterOTP = async (req, res) => {
       expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
 
-    // Development only
-    console.log(
-      `Registration OTP for ${normalizedEmail}: ${otp}`
-    );
+    // Send OTP to the user's email
+    try {
+      await sendOtpEmail(normalizedEmail, otp, "registration");
+    } catch (emailError) {
+      console.error("Registration email delivery failed:", emailError.message);
+
+      // Remove the OTP if delivery fails
+      await OTP.deleteMany({
+        email: normalizedEmail,
+        purpose: "register",
+      });
+
+      return res.status(502).json({
+        success: false,
+        message: "Unable to send OTP email. Please try again.",
+      });
+    }
 
     return res.status(200).json({
       success: true,
-      message: "Registration OTP sent successfully",
+      message: "Registration OTP sent to your email. It expires in 5 minutes.",
+      expiresIn: 300,
     });
   } catch (error) {
     console.error("Send Register OTP Error:", error);
@@ -98,25 +101,13 @@ const sendRegisterOTP = async (req, res) => {
 // ==========================================
 const verifyRegisterOTP = async (req, res) => {
   try {
-    const {
-      name,
-      email,
-      institution,
-      otp,
-    } = req.body;
+    const { name, email, institution, otp } = req.body;
 
     // Validate input
-    if (
-      !name ||
-      !email ||
-      !institution?.name ||
-      !institution?.city ||
-      !otp
-    ) {
+    if (!name || !email || !institution?.name || !institution?.city || !otp) {
       return res.status(400).json({
         success: false,
-        message:
-          "Name, email, institution details and OTP are required",
+        message: "Name, email, institution details and OTP are required",
       });
     }
 
@@ -210,9 +201,9 @@ const verifyRegisterOTP = async (req, res) => {
   }
 };
 
-// ==========================================
+
 // LOGIN - SEND OTP
-// ==========================================
+
 const sendLoginOTP = async (req, res) => {
   try {
     const { email } = req.body;
@@ -263,15 +254,35 @@ const sendLoginOTP = async (req, res) => {
       expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
 
-    // Development only
-    console.log(
-      `Login OTP for ${normalizedEmail}: ${otp}`
-    );
+   
+    
+    // Send OTP to the user's email
+    try {
+      await sendOtpEmail(
+        normalizedEmail,
+        otp,
+        "login"
+      );
+    } catch (emailError) {
+      console.error("Login email delivery failed:", emailError.message);
+
+      await OTP.deleteMany({
+        email: normalizedEmail,
+        purpose: "login",
+      });
+
+      return res.status(502).json({
+        success: false,
+        message: "Unable to send OTP email. Please try again.",
+      });
+    }
 
     return res.status(200).json({
       success: true,
-      message: "Login OTP sent successfully",
+      message: "Login OTP sent to your email. It expires in 5 minutes.",
+      expiresIn: 300,
     });
+
   } catch (error) {
     console.error("Send Login OTP Error:", error);
 

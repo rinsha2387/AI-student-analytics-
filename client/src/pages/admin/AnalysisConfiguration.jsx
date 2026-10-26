@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import AdminSidebar from "../../components/admin/AdminSidebar";
@@ -15,15 +14,16 @@ const DEFAULT_CONFIG = {
   reportFormats: "CSV, PDF",
 };
 
+const API_URL = "http://localhost:5000/api/admin/analysis-config";
+
 const inputClass =
   "w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-[#1b3154] outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100";
 
-const labelClass =
-  "mb-2 block text-sm font-semibold text-[#1b3154]";
+const labelClass = "mb-2 block text-sm font-semibold text-[#1b3154]";
 
 export default function AnalysisConfiguration() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, token, logout } = useAuth();
 
   const [formData, setFormData] = useState(DEFAULT_CONFIG);
   const [notice, setNotice] = useState({
@@ -32,6 +32,54 @@ export default function AnalysisConfiguration() {
   });
 
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!token) return;
+
+    const fetchConfig = async () => {
+      try {
+        const response = await fetch(API_URL, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to load configuration.");
+        }
+
+        // Supports either a direct config response or { config: {...} }
+        const config = data.config || data;
+
+        setFormData({
+          maxFileSizeMB: String(
+            config.maxFileSizeMB ?? DEFAULT_CONFIG.maxFileSizeMB,
+          ),
+          allowedFileTypes:
+            config.allowedFileTypes ?? DEFAULT_CONFIG.allowedFileTypes,
+          maxRows: String(config.maxRows ?? DEFAULT_CONFIG.maxRows),
+          requiredFields:
+            config.requiredFields ?? DEFAULT_CONFIG.requiredFields,
+          supportedFields:
+            config.supportedFields ?? DEFAULT_CONFIG.supportedFields,
+          timeoutSeconds: String(
+            config.timeoutSeconds ?? DEFAULT_CONFIG.timeoutSeconds,
+          ),
+          reportFormats: config.reportFormats ?? DEFAULT_CONFIG.reportFormats,
+        });
+      } catch (error) {
+        setNotice({
+          type: "error",
+          text: error.message || "Unable to load configuration.",
+        });
+      }
+    };
+
+    fetchConfig();
+  }, [token]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -110,18 +158,71 @@ export default function AnalysisConfiguration() {
   const handleSave = async (event) => {
     event.preventDefault();
 
-    const error = validate();
+    const validationError = validate();
 
-    if (error) {
-      setNotice({ type: "error", text: error });
+    if (validationError) {
+      setNotice({ type: "error", text: validationError });
       return;
     }
 
-    // Backend API integration will be added in the next step.
-    setNotice({
-      type: "info",
-      text: "Validation successful. Connect the backend API to save these settings permanently.",
-    });
+    if (!token) {
+      setNotice({
+        type: "error",
+        text: "Your session has expired. Please log in again.",
+      });
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setNotice({ type: "", text: "" });
+
+      const payload = {
+        ...formData,
+        maxFileSizeMB: Number(formData.maxFileSizeMB),
+        maxRows: Number(formData.maxRows),
+        timeoutSeconds: Number(formData.timeoutSeconds),
+      };
+
+      const response = await fetch(API_URL, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to save configuration.");
+      }
+
+      const config = data.config || data;
+
+      setFormData({
+        maxFileSizeMB: String(config.maxFileSizeMB ?? payload.maxFileSizeMB),
+        allowedFileTypes: config.allowedFileTypes ?? payload.allowedFileTypes,
+        maxRows: String(config.maxRows ?? payload.maxRows),
+        requiredFields: config.requiredFields ?? payload.requiredFields,
+        supportedFields: config.supportedFields ?? payload.supportedFields,
+        timeoutSeconds: String(config.timeoutSeconds ?? payload.timeoutSeconds),
+        reportFormats: config.reportFormats ?? payload.reportFormats,
+      });
+
+      setNotice({
+        type: "success",
+        text: "Analysis configuration saved successfully.",
+      });
+    } catch (error) {
+      setNotice({
+        type: "error",
+        text: error.message || "Unable to save configuration.",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -134,10 +235,7 @@ export default function AnalysisConfiguration() {
       />
 
       <div className="min-h-screen lg:ml-[288px]">
-        <AdminTopbar
-          user={user}
-          activeMenu="Analysis Configuration"
-        />
+        <AdminTopbar user={user} activeMenu="Analysis Configuration" />
 
         <main className="space-y-7 p-5 md:p-8">
           {/* Page heading */}
@@ -161,7 +259,9 @@ export default function AnalysisConfiguration() {
               className={`rounded-lg border p-4 text-sm ${
                 notice.type === "error"
                   ? "border-rose-200 bg-rose-50 text-rose-700"
-                  : "border-indigo-200 bg-indigo-50 text-indigo-700"
+                  : notice.type === "success"
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                    : "border-indigo-200 bg-indigo-50 text-indigo-700"
               }`}
             >
               {notice.text}
@@ -317,53 +417,12 @@ export default function AnalysisConfiguration() {
               </div>
             </form>
 
-            {/* Protected configuration information */}
-            <aside className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-              <div className="flex h-9 w-9 items-center justify-center text-emerald-600">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  className="h-8 w-8"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 3 20 6v5c0 5-3.4 8.5-8 10-4.6-1.5-8-5-8-10V6l8-3Z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m9 12 2 2 4-4"
-                  />
-                </svg>
-              </div>
-
-              <h2 className="mt-4 text-base font-medium text-[#1b3154]">
-                Protected configuration
-              </h2>
-
-              <p className="mt-3 text-sm leading-6 text-slate-400">
-                Only authorized administrators can access these settings.
-                API keys are never displayed in full.
-              </p>
-
-              <div className="my-6 border-t border-slate-100" />
-
-              <p className="text-sm leading-6 text-slate-400">
-                Management users only upload data and review results.
-                Analysis instructions remain on the administrator side.
-              </p>
-            </aside>
+         
           </div>
 
           {/* Footer */}
           <footer className="flex flex-wrap justify-between gap-2 border-t border-slate-200 pt-5 text-[11px] text-slate-400">
-            <span>
-              © {new Date().getFullYear()} AI Student Analytics
-            </span>
+            <span>© {new Date().getFullYear()} AI Student Analytics</span>
             <span>Insights support human judgment</span>
           </footer>
         </main>
