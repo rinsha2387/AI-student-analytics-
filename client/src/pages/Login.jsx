@@ -79,6 +79,8 @@ const Login = () => {
       setOtpSent(true);
       setExpiresAt(Date.now() + 5 * 60 * 1000);
       setResendAvailableAt(Date.now() + 30 * 1000);
+      setSecondsLeft(5 * 60);
+      setResendSecondsLeft(30);
     } catch (error) {
       setError(error.message);
     } finally {
@@ -113,8 +115,11 @@ const Login = () => {
       }
 
       setOtp("");
+      setOtpSent(true);
       setExpiresAt(Date.now() + 5 * 60 * 1000);
       setResendAvailableAt(Date.now() + 30 * 1000);
+      setSecondsLeft(5 * 60);
+      setResendSecondsLeft(30);
       setMessage("A new OTP has been sent to your email.");
     } catch (error) {
       setError(error.message);
@@ -345,30 +350,9 @@ const Login = () => {
                 </p>
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
-                <span className={secondsLeft > 0 ? "text-[#7d899f]" : "text-red-600"}>
-                  {secondsLeft > 0
-                    ? `OTP expires in ${formatTime(secondsLeft)}`
-                    : "OTP expired. Please request a new code."}
-                </span>
-
-                <button
-                  type="button"
-                  onClick={handleResendOTP}
-                  disabled={loading || resendSecondsLeft > 0}
-                  className="font-semibold text-[#5269d6] hover:underline disabled:text-[#aab3c3] disabled:no-underline"
-                >
-                  {loading
-                    ? "Sending..."
-                    : resendSecondsLeft > 0
-                      ? `Resend OTP in ${resendSecondsLeft}s`
-                      : "Resend OTP"}
-                </button>
-              </div>
-
               <button
                 type="submit"
-                disabled={loading || secondsLeft === 0}
+                disabled={loading}
                 className="group w-full h-[45px] rounded-md
                 bg-[#5269d6] hover:bg-[#465dc8]
                 disabled:opacity-60
@@ -433,6 +417,27 @@ const Login = () => {
                   focus:ring-4 focus:ring-[#5269d6]/10
                   transition"
                 />
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                <span className={secondsLeft > 0 ? "text-[#7d899f]" : "text-red-600"}>
+                  {secondsLeft > 0
+                    ? `OTP expires in ${formatTime(secondsLeft)}`
+                    : "OTP expired. Please request a new code."}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={handleResendOTP}
+                  disabled={loading || resendSecondsLeft > 0}
+                  className="font-semibold text-[#5269d6] hover:underline disabled:text-[#aab3c3] disabled:no-underline"
+                >
+                  {loading
+                    ? "Sending..."
+                    : resendSecondsLeft > 0
+                      ? `Resend OTP in ${resendSecondsLeft}s`
+                      : "Resend OTP"}
+                </button>
               </div>
 
               <button

@@ -1,20 +1,15 @@
 const express = require("express");
 const router = express.Router();
-
-const {
-  uploadDataset,
-  getMyDatasets,
-} = require("../controllers/datasetController");
-
-const upload = require("../middleware/uploadMiddleware");
+const {uploadDataset,getMyDatasets} = require("../controllers/datasetController");
 const protect = require("../middleware/authMiddleware");
 const authorize = require("../middleware/roleMiddleware");
+const uploadWithConfig = require("../middleware/uploadMiddleware");
 
 router.post(
   "/upload",
   protect,
   authorize("manager"),
-  upload.single("file"),
+  uploadWithConfig,
   uploadDataset
 );
 
