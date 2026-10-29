@@ -1,14 +1,66 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 const ManagerDashboard = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, token, logout } = useAuth();
 
+  const [dashboardData, setDashboardData] = useState(null);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
+  const [dashboardError, setDashboardError] = useState("");
+
+  useEffect(() => {
+    if (!token) {
+      setDashboardLoading(false);
+      setDashboardError("Please log in again to view your dashboard.");
+      return;
+    }
+
+    const controller = new AbortController();
+
+    const loadDashboard = async () => {
+      setDashboardLoading(true);
+      setDashboardError("");
+
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/analysis/dashboard",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            signal: controller.signal,
+          },
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || "Failed to load dashboard data.");
+        }
+
+        setDashboardData(data);
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          setDashboardError(error.message || "Unable to load dashboard data.");
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setDashboardLoading(false);
+        }
+      }
+    };
+
+    loadDashboard();
+
+    return () => controller.abort();
+  }, [token]);
 
   const managerName = user?.name || "Manager";
-  const institutionName = user?.institutionName || user?.institution?.name || "Your Institution";
+  const institutionName =
+    user?.institutionName || user?.institution?.name || "Your Institution";
 
   const firstName = managerName.split(" ")[0];
 
@@ -21,133 +73,133 @@ const ManagerDashboard = () => {
     }).format(new Date());
   }, []);
 
+  const handleMenuClick = (item) => {
+    const routes = {
+      Dashboard: "/manager/dashboard",
+      "Upload Data": "/manager/upload-data",
+      "AI Analysis": "/manager/ai-analysis",
+      "High-Risk Students": "/manager/high-risk-students",
+      "Student Insights": "/manager/student-insights",
+      "Behavior Insights": "/manager/behavior-insights",
+      "Academic Analytics": "/manager/academic-analytics",
+      "Attendance Analytics": "/manager/attendance-analytics",
+      "Financial Impact": "/manager/financial-impact",
+      Reports: "/manager/reports",
+      "Analysis History": "/manager/analysis-history",
+      Settings: "/manager/settings",
+    };
 
+    const path = routes[item.name];
 
-const handleMenuClick = (item) => {
-  const routes = {
-    Dashboard: "/manager/dashboard",
-    "Upload Data": "/manager/upload-data",
-    "AI Analysis": "/manager/ai-analysis",
-    "High-Risk Students": "/manager/high-risk-students",
-    "Student Insights": "/manager/student-insights",
-    "Behavior Insights": "/manager/behavior-insights",
-    "Academic Analytics": "/manager/academic-analytics",
-    "Attendance Analytics": "/manager/attendance-analytics",
-    "Financial Impact": "/manager/financial-impact",
-    Reports: "/manager/reports",
-    "Analysis History": "/manager/analysis-history",
-    Settings: "/manager/settings",
+    if (path) navigate(path);
   };
-
-  const path = routes[item.name];
-
-  if (path) navigate(path);
-};
-
- 
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  
+  const stats = dashboardData?.stats || {};
 
   const statistics = [
     {
       title: "Total students",
-      value: "1,248",
-      description: "Students analyzed",
+      value: stats.totalStudents?.toLocaleString("en-IN") ?? "0",
+      description: "Students across uploaded datasets",
       icon: "students",
       color: "blue",
-      trend: "8.2%",
     },
     {
       title: "Students requiring review",
-      value: "87",
-      description: "Based on risk indicators",
+      value: stats.highRiskStudents?.toLocaleString("en-IN") ?? "0",
+      description: "From the latest completed analysis",
       icon: "alert",
       color: "red",
     },
     {
-      title: "Declining performance",
-      value: "143",
-      description: "Academic trend indicators",
+      title: "Completed analyses",
+      value: stats.completedAnalyses?.toLocaleString("en-IN") ?? "0",
+      description: "Saved AI analysis results",
       icon: "trend",
       color: "orange",
     },
     {
-      title: "Attendance concerns",
-      value: "96",
-      description: "Below expected threshold",
+      title: "Average attendance",
+      value:
+        stats.averageAttendance == null ? "—" : `${stats.averageAttendance}%`,
+      description: "Calculated from available attendance values",
       icon: "calendar",
       color: "purple",
     },
     {
-      title: "Financial indicators",
-      value: "₹12.4L",
-      description: "From available financial data",
-      icon: "financial",
+      title: "Average marks",
+      value: stats.averageMarks == null ? "—" : stats.averageMarks,
+      description: "Calculated from available marks",
+      icon: "academic",
       color: "green",
     },
   ];
 
+  const latestResult = dashboardData?.latestAnalysis?.result || null;
 
-  const attentionItems = [
-    {
-      title: "Students requiring review",
-      description:
-        "32 students in Semester 5 show multiple indicators for academic review.",
-      action: "Review students",
-      icon: "alert",
-      color: "red",
-    },
-    {
-      title: "Performance trend detected",
-      description:
-        "A decline in exam performance appears across 3 departments.",
-      action: "Explore insights",
-      icon: "trend",
-      color: "orange",
-    },
-    {
-      title: "New analysis ready",
-      description:
-        "Your Semester 5 student analysis report is available to review.",
-      action: "View report",
-      icon: "reports",
-      color: "blue",
-    },
-  ];
+  const attentionItems = latestResult
+    ? [
+        {
+          title: "Latest AI analysis",
+          description:
+            latestResult.executiveSummary ||
+            latestResult.summary ||
+            "A completed analysis is available. Review its saved results.",
+          action: "View report",
+          icon: "reports",
+          color: "blue",
+        },
+      ]
+    : [];
 
+  const recentAnalyses = (dashboardData?.recentAnalyses || []).map(
+    (analysis) => ({
+      id: String(analysis._id),
+      dataset:
+        analysis.dataset?.name ||
+        analysis.dataset?.originalFileName ||
+        "Student dataset",
+      date: analysis.createdAt
+        ? new Date(analysis.createdAt).toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+        : "—",
+      students: analysis.dataset?.totalRows ?? "—",
+      indicators:
+        analysis.status === "completed"
+          ? (() => {
+              const result = analysis.result || {};
 
-  const recentAnalyses = [
-    {
-      dataset: "Semester 5",
-      id: "AI-0048",
-      date: "30 Sep 2026",
-      students: "450",
-      indicators: "32",
-      status: "Completed",
-    },
-    {
-      dataset: "Semester 4",
-      id: "AI-0047",
-      date: "28 Sep 2026",
-      students: "420",
-      indicators: "27",
-      status: "Completed",
-    },
-    {
-      dataset: "Semester 3",
-      id: "AI-0046",
-      date: "24 Sep 2026",
-      students: "378",
-      indicators: "28",
-      status: "Completed",
-    },
-  ];
+              const riskKeys = [
+                "highRiskStudents",
+                "studentsRequiringReview",
+                "atRiskStudents",
+                "studentsAtRisk",
+                "riskStudents",
+              ];
 
+              const key = riskKeys.find((name) => Array.isArray(result[name]));
+
+              return key ? result[key].length : "—";
+            })()
+          : "—",
+      status:
+        analysis.status === "completed"
+          ? "Completed"
+          : analysis.status === "processing"
+            ? "Processing"
+            : analysis.status === "failed"
+              ? "Failed"
+              : "Pending",
+    }),
+  );
 
   const chartData = [
     {
@@ -373,7 +425,6 @@ const handleMenuClick = (item) => {
     }
   };
 
-
   const getStatStyles = (color) => {
     const styles = {
       blue: {
@@ -403,9 +454,6 @@ const handleMenuClick = (item) => {
 
   return (
     <div className="min-h-screen bg-[#f7f8fc] text-[#172b4d]">
-    
-     
-
       <main>
         <div className="px-5 py-7 lg:px-11">
           <section className="mb-8 flex flex-col justify-between gap-5 xl:flex-row xl:items-end">
@@ -425,7 +473,7 @@ const handleMenuClick = (item) => {
 
             <div className="flex gap-3">
               <button
-               onClick={() => handleMenuClick({ name: "Reports" })}
+                onClick={() => handleMenuClick({ name: "Reports" })}
                 className="flex items-center gap-2 rounded-lg border border-[#dfe4ed] bg-white px-4 py-2.5 text-[12px] font-semibold text-[#344867] shadow-sm hover:bg-[#fafbfc]"
               >
                 <Icon type="reports" size={17} />
@@ -486,6 +534,28 @@ const handleMenuClick = (item) => {
               );
             })}
           </section>
+
+          {dashboardLoading && (
+            <div className="mb-5 rounded-xl border border-[#e4e8ef] bg-white p-5 text-sm text-[#66758e]">
+              Loading your student analytics...
+            </div>
+          )}
+
+          {dashboardError && (
+            <div
+              role="alert"
+              className="mb-5 rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-700"
+            >
+              {dashboardError}
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="ml-3 font-semibold underline"
+              >
+                Try again
+              </button>
+            </div>
+          )}
 
           {/* -----------------------------------------------
               Analytics + Attention
@@ -639,19 +709,11 @@ const handleMenuClick = (item) => {
               </div>
 
               <div className="divide-y divide-[#edf0f4]">
-                {attentionItems.map((item) => {
-                  const iconStyles = {
-                    red: "bg-red-50 text-red-400",
-                    orange: "bg-orange-50 text-orange-400",
-                    blue: "bg-indigo-50 text-indigo-500",
-                  };
-
-                  return (
-                    <div key={item.title} className="py-4 first:pt-3 last:pb-1">
+                {attentionItems.length > 0 ? (
+                  attentionItems.map((item) => (
+                    <div key={item.title} className="py-4">
                       <div className="flex gap-3">
-                        <div
-                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${iconStyles[item.color]}`}
-                        >
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-500">
                           <Icon type={item.icon} size={18} />
                         </div>
 
@@ -661,17 +723,13 @@ const handleMenuClick = (item) => {
                           </p>
 
                           <p className="mt-1 text-[10px] leading-5 text-[#8998ae]">
-                            {item.description}
+                            {typeof item.description === "string"
+                              ? item.description
+                              : JSON.stringify(item.description)}
                           </p>
 
                           <button
-                           onClick={() => handleMenuClick({
-                                  name: item.title === "Students requiring review"
-                                  ? "High-Risk Students"
-                                  : item.title === "Performance trend detected"
-                                  ? "Academic Analytics"
-                                  : "Reports",
-                              })}
+                            onClick={() => handleMenuClick({ name: "Reports" })}
                             className="mt-2 flex items-center gap-1 text-[10px] font-semibold text-[#5268d8]"
                           >
                             {item.action}
@@ -680,8 +738,24 @@ const handleMenuClick = (item) => {
                         </div>
                       </div>
                     </div>
-                  );
-                })}
+                  ))
+                ) : (
+                  <div className="py-8 text-center">
+                    <p className="text-sm font-medium text-[#273d5e]">
+                      No completed analysis yet
+                    </p>
+                    <p className="mt-2 text-xs leading-5 text-[#8998ae]">
+                      Upload student data and run AI analysis to see your
+                      insights here.
+                    </p>
+                    <button
+                      onClick={() => handleMenuClick({ name: "Upload Data" })}
+                      className="mt-4 rounded-lg bg-[#5268d8] px-4 py-2 text-xs font-semibold text-white"
+                    >
+                      Upload student data
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </section>

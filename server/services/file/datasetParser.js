@@ -1,5 +1,10 @@
-
 const XLSX = require("xlsx");
+
+const normalizeHeader = (value) =>
+  String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
 
 const parseDataset = (filePath) => {
   const workbook = XLSX.readFile(filePath, {
@@ -14,40 +19,87 @@ const parseDataset = (filePath) => {
 
   const worksheet = workbook.Sheets[firstSheetName];
 
-  const rawRows = XLSX.utils.sheet_to_json(worksheet, {
+  // Read rows as arrays so the header row can be checked explicitly.
+  const rows = XLSX.utils.sheet_to_json(worksheet, {
+    header: 1,
     defval: "",
     raw: false,
+    blankrows: false,
   });
 
-  if (rawRows.length === 0) {
-    throw new Error("The uploaded file has no student data rows.");
+  if (!rows.length) {
+    throw new Error("The uploaded file is empty.");
   }
 
-  const columns = Object.keys(rawRows[0]);
+  const headerRow = rows[0];
 
-  if (columns.length === 0) {
+  if (!Array.isArray(headerRow) || headerRow.length === 0) {
     throw new Error("The uploaded file does not contain column headers.");
   }
 
-  const normalizedRows = rawRows.map((row) => {
-    const normalizedRow = {};
+  const columns = headerRow.map((header) => String(header ?? "").trim());
 
-    for (const [key, value] of Object.entries(row)) {
-      const cleanKey = key.trim();
+  if (columns.every((column) => !column)) {
+    throw new Error("The uploaded file does not contain column headers.");
+  }
 
-      if (!cleanKey) continue;
+  const blankHeaders = [];
 
-      normalizedRow[cleanKey] =
-        typeof value === "string" ? value.trim() : value;
+  columns.forEach((column, index) => {
+    if (!column) {
+      blankHeaders.push(index + 1);
+    }
+  });
+
+  if (blankHeaders.length) {
+    throw new Error(
+      `Column header(s) are blank at position(s): ${blankHeaders.join(", ")}. Please add a name to every column.`
+    );
+  }
+
+  const seenHeaders = new Set();
+  const duplicateHeaders = new Set();
+
+  for (const column of columns) {
+    const normalized = normalizeHeader(column);
+
+    if (seenHeaders.has(normalized)) {
+      duplicateHeaders.add(column);
     }
 
-    return normalizedRow;
+    seenHeaders.add(normalized);
+  }
+
+  if (duplicateHeaders.size) {
+    throw new Error(
+      `Duplicate column headers found: ${[...duplicateHeaders].join(", ")}. Please rename duplicate columns.`
+    );
+  }
+
+  const dataRows = rows.slice(1).filter((row) =>
+    row.some((value) => String(value ?? "").trim() !== "")
+  );
+
+  if (!dataRows.length) {
+    throw new Error("The uploaded file has no student data rows.");
+  }
+
+  const records = dataRows.map((row) => {
+    const record = {};
+
+    columns.forEach((column, index) => {
+      const value = row[index] ?? "";
+      record[column] =
+        typeof value === "string" ? value.trim() : value;
+    });
+
+    return record;
   });
 
   return {
     columns,
-    records: normalizedRows,
-    totalRows: normalizedRows.length,
+    records,
+    totalRows: records.length,
   };
 };
 

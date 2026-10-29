@@ -7,11 +7,13 @@ const authorize = require("../middleware/roleMiddleware");
 const {
   runAnalysis,
   getLatestAnalysis,
+  getManagerDashboard,
 } = require("../controllers/analysisController");
 
 // Both endpoints require an authenticated manager.
 router.use(protect, authorize("manager"));
 
+router.get("/dashboard" , getManagerDashboard);
 router.post("/:datasetId", runAnalysis);
 router.get("/dataset/:datasetId/latest", getLatestAnalysis);
 

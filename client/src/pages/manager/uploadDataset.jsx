@@ -450,6 +450,38 @@ const UploadDataset = () => {
                 </button>
               </div>
             )}
+
+            {/* Run AI Analysis after successful upload */}
+            {uploadedDataset && (
+              <div className="mt-6 rounded-xl border border-[#dfe4f5] bg-[#f4f5ff] p-5">
+                <h3 className="text-base font-semibold text-[#253a5c]">
+                  Dataset uploaded successfully
+                </h3>
+
+                <p className="mt-2 text-sm leading-6 text-[#7e8da5]">
+                  Your dataset has passed validation. Run AI analysis to
+                  generate student insights for your Manager Dashboard.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={handleRunAnalysis}
+                  disabled={isAnalyzing || isUploading}
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-[#5268d8] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#4358c6] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isAnalyzing
+                    ? "Analyzing student data..."
+                    : "Run AI Analysis"}
+                </button>
+
+                {analysisResult && (
+                  <p className="mt-3 text-sm font-medium text-[#218b6d]">
+                    Analysis completed! Visit your Manager Dashboard to view the
+                    results.
+                  </p>
+                )}
+              </div>
+            )}
           </section>
 
           {/* Information cards */}

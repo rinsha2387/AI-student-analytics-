@@ -11,6 +11,7 @@ import AIPrompts from "./pages/admin/AIPrompts";
 import AIConfiguration from "./pages/admin/AIConfiguration";
 import AnalysisConfiguration from "./pages/admin/AnalysisConfiguration";
 
+
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
