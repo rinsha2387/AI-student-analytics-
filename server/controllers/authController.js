@@ -1,3 +1,4 @@
+
 const User = require("../models/User");
 const OTP = require("../models/OTP");
 const jwt = require("jsonwebtoken");
@@ -18,6 +19,25 @@ const generateToken = (user) => {
 
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+const escapeRegex = (value) =>
+  String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// Same institution = same name and same city (not case sensitive).
+const institutionQuery = (institution) => ({
+  "institution.name": new RegExp(`^${escapeRegex(institution?.name?.trim() || "")}$`, "i"),
+  "institution.city": new RegExp(`^${escapeRegex(institution?.city?.trim() || "")}$`, "i"),
+});
+
+// Rejected users cannot sign in. Pending users CAN sign in, but they only
+// see the "waiting for approval" page until the manager accepts them.
+const getStatusError = (user) => {
+  if (user.status === "rejected") {
+    return "Your request to join this institution was not approved.";
+  }
+
+  return null;
 };
 
 const sendRegisterOTP = async (req, res) => {
@@ -155,17 +175,22 @@ const verifyRegisterOTP = async (req, res) => {
       });
     }
 
-    // Create manager account
+    // The first person to register an institution becomes its manager.
+    // Anyone who joins an existing institution must be approved first.
+    const institutionHasManager = await User.exists({
+      ...institutionQuery(institution),
+      role: { $in: ["manager", "admin"] },
+    });
+
     const user = await User.create({
       name,
       email: normalizedEmail,
-
-      // New registrations are always managers
-      role: "manager",
+      role: institutionHasManager ? "sales" : "manager",
+      status: institutionHasManager ? "pending" : "active",
 
       institution: {
-        name: institution.name,
-        city: institution.city,
+        name: institution.name.trim(),
+        city: institution.city.trim(),
       },
     });
 
@@ -188,6 +213,7 @@ const verifyRegisterOTP = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        status: user.status || "active",
         institution: user.institution,
       },
     });
@@ -200,7 +226,6 @@ const verifyRegisterOTP = async (req, res) => {
     });
   }
 };
-
 
 // LOGIN - SEND OTP
 
@@ -237,6 +262,16 @@ const sendLoginOTP = async (req, res) => {
       });
     }
 
+    // Check approval status
+    const statusError = getStatusError(user);
+
+    if (statusError) {
+      return res.status(403).json({
+        success: false,
+        message: statusError,
+      });
+    }
+
     // Generate OTP
     const otp = generateOTP();
 
@@ -254,15 +289,9 @@ const sendLoginOTP = async (req, res) => {
       expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
 
-   
-    
     // Send OTP to the user's email
     try {
-      await sendOtpEmail(
-        normalizedEmail,
-        otp,
-        "login"
-      );
+      await sendOtpEmail(normalizedEmail, otp, "login");
     } catch (emailError) {
       console.error("Login email delivery failed:", emailError.message);
 
@@ -282,7 +311,6 @@ const sendLoginOTP = async (req, res) => {
       message: "Login OTP sent to your email. It expires in 5 minutes.",
       expiresIn: 300,
     });
-
   } catch (error) {
     console.error("Send Login OTP Error:", error);
 
@@ -292,7 +320,6 @@ const sendLoginOTP = async (req, res) => {
     });
   }
 };
-
 
 const verifyLoginOTP = async (req, res) => {
   try {
@@ -353,6 +380,16 @@ const verifyLoginOTP = async (req, res) => {
       });
     }
 
+    // Check approval status
+    const statusError = getStatusError(user);
+
+    if (statusError) {
+      return res.status(403).json({
+        success: false,
+        message: statusError,
+      });
+    }
+
     // Delete used OTP
     await OTP.deleteOne({
       _id: otpRecord._id,
@@ -372,6 +409,7 @@ const verifyLoginOTP = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        status: user.status || "active",
         institution: user.institution,
       },
     });
@@ -385,9 +423,45 @@ const verifyLoginOTP = async (req, res) => {
   }
 };
 
+// ==========================================
+// CURRENT USER (fresh role from the database)
+// ==========================================
+const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id || req.user.id);
+
+    if (!user || !user.isActive || user.status === "rejected") {
+      return res.status(401).json({
+        success: false,
+        message: "Account not found or not approved",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        status: user.status || "active",
+        institution: user.institution,
+      },
+    });
+  } catch (error) {
+    console.error("Get Me Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
 module.exports = {
   sendRegisterOTP,
   verifyRegisterOTP,
   sendLoginOTP,
   verifyLoginOTP,
+  getMe,
 };

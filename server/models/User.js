@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["admin", "manager"],
+      enum: ["admin", "manager","sales"],
       default: "manager",
     },
 
@@ -38,6 +38,11 @@ const userSchema = new mongoose.Schema(
         },
         trim: true,
       },
+      status: {
+        type: String,
+        enum: ["active", "pending", "rejected"],
+        default: "active",
+      },
     },
 
     isActive: {
@@ -47,7 +52,7 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 module.exports = mongoose.model("User", userSchema);

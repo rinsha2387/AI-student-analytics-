@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ManagerDashboard from "./pages/manager/Dashboard";
@@ -10,6 +9,7 @@ import ManagementUsers from "./pages/admin/MangmentUsers";
 import AIPrompts from "./pages/admin/AIPrompts";
 import AIConfiguration from "./pages/admin/AIConfiguration";
 import AnalysisConfiguration from "./pages/admin/AnalysisConfiguration";
+import AIAnalysis from "./pages/manager/AIAnalysis";
 
 
 import ProtectedRoute from "./components/common/ProtectedRoute";
@@ -63,6 +63,8 @@ function App() {
             <Route path="dashboard" element={<ManagerDashboard />} />
 
             <Route path="upload-data" element={<UploadDataset />} />
+            <Route path="ai-analysis" element={<AIAnalysis />} />
+            <Route path="ai-analysis/:datasetId" element={<AIAnalysis />} />
           </Route>
 
           {/* Admin route */}

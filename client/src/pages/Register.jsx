@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 const Register = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -167,8 +168,21 @@ const Register = () => {
 
       // Save authentication data
       login(data.token, data.user);
-      alert("Account created successfully!");
-      navigate("/manager/dashboard");
+
+      alert(
+        data.user.status === "pending"
+          ? "Your request was sent to your institution's manager."
+          : "Account created successfully!",
+      );
+
+      // First person of an institution -> manager dashboard.
+      // People who join later -> sales side, which shows
+      // "waiting for manager approval" until they are accepted.
+      navigate(
+        data.user.role === "sales"
+          ? "/sales/financial-impact"
+          : "/manager/dashboard",
+      );
     } catch (error) {
       console.error("Verify OTP Error:", error);
       alert("Unable to connect to the server.");
@@ -288,7 +302,7 @@ const Register = () => {
             </h2>
 
             <p className="mt-1 text-xs text-[#9aa5b8]">
-              Register your management account using OTP.
+              Register your account using OTP.
             </p>
           </div>
 
@@ -422,7 +436,6 @@ const Register = () => {
                   →
                 </span>
               </button>
-              
             </form>
           ) : (
             /* =================================================

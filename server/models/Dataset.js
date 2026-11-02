@@ -62,8 +62,17 @@ const datasetSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    columnMappings: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+
+    ambiguousMappings: {
+      type: [mongoose.Schema.Types.Mixed],
+      default: [],
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Dataset", datasetSchema);

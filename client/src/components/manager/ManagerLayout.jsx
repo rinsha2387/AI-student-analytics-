@@ -36,7 +36,9 @@ const ManagerLayout = () => {
 
   const activeMenu =
     Object.keys(routes).find(
-      (name) => routes[name] === location.pathname
+      (name) =>
+        routes[name] === location.pathname ||
+        location.pathname.startsWith(`${routes[name]}/`)
     ) || "Dashboard";
 
   const handleMenuClick = (item) => {

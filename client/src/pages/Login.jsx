@@ -166,6 +166,8 @@ const Login = () => {
       // Redirect based on CURRENT role from backend
       if (data.user.role === "admin") {
         navigate("/admin/dashboard");
+      } else if (data.user.role === "sales") {
+        navigate("/sales/financial-impact");
       } else {
         navigate("/manager/dashboard");
       }

@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
 const ACCEPTED_EXTENSIONS = [".csv", ".xlsx", ".xls"];
@@ -8,7 +9,7 @@ const UploadDataset = () => {
   const fileInputRef = useRef(null);
 
   const { token } = useAuth();
-
+  const navigate = useNavigate();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedDataset, setUploadedDataset] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -208,6 +209,8 @@ const UploadDataset = () => {
 
       setAnalysisResult(result);
       setMessage("AI analysis completed successfully.");
+
+      navigate(`/manager/ai-analysis/${encodeURIComponent(datasetId)}`);
     } catch (err) {
       setError(err.message || "Unable to analyze this dataset.");
     } finally {
@@ -460,7 +463,7 @@ const UploadDataset = () => {
 
                 <p className="mt-2 text-sm leading-6 text-[#7e8da5]">
                   Your dataset has passed validation. Run AI analysis to
-                  generate student insights for your Manager Dashboard.
+                  generate student insights.
                 </p>
 
                 <button
