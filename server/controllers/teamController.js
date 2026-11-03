@@ -32,7 +32,7 @@ const listTeam = async (req, res) => {
 };
 
 // PATCH /api/team/:id/role  (manager only)
-// Body: { role: "manager" | "sales" }
+// Body:{body : manageronluy just text only}
 const updateUserRole = async (req, res) => {
   try {
     const { role } = req.body;

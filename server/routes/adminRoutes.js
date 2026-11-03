@@ -1,34 +1,37 @@
 const express = require("express");
 
 const protect = require("../middleware/authMiddleware");
-const authorize = require("../middleware/roleMiddleware");
+const { allowRoles } = require("../middleware/roleMiddleware");
 
 const {
   getAdminDashboard,
   getManagementUsers,
-  updateManagementUserStatus
+  updateManagementUserStatus,
 } = require("../controllers/adminController");
 
 const router = express.Router();
 
+// Admin dashboard
 router.get(
   "/dashboard",
   protect,
-  authorize("admin"),
+  allowRoles("admin"),
   getAdminDashboard
 );
 
+// Get management users
 router.get(
   "/users",
   protect,
-  authorize("admin"),
+  allowRoles("admin"),
   getManagementUsers
 );
 
+// Update management user status
 router.patch(
   "/users/:id/status",
   protect,
-  authorize("admin"),
+  allowRoles("admin"),
   updateManagementUserStatus
 );
 

@@ -10,13 +10,15 @@ import AIPrompts from "./pages/admin/AIPrompts";
 import AIConfiguration from "./pages/admin/AIConfiguration";
 import AnalysisConfiguration from "./pages/admin/AnalysisConfiguration";
 import AIAnalysis from "./pages/manager/AIAnalysis";
+import TeamManagement from "./pages/manager/TeamManagment";
+import RoleRoute from "./components/RoleRoute";
+import SalesLayout from "./components/sales/SalesLayout";
 
 
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
-// Sends unmatched URLs to the home page of the signed-in user
-// instead of sending everyone to the login screen.
+
 const RoleHomeRedirect = () => {
   const { user, loading, isAuthenticated } = useAuth();
 
@@ -65,6 +67,7 @@ function App() {
             <Route path="upload-data" element={<UploadDataset />} />
             <Route path="ai-analysis" element={<AIAnalysis />} />
             <Route path="ai-analysis/:datasetId" element={<AIAnalysis />} />
+            <Route path="team" element={<TeamManagement />} />
           </Route>
 
           {/* Admin route */}
@@ -109,6 +112,15 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/sales"
+            element={
+              <RoleRoute role="sales">
+                <SalesLayout />
+              </RoleRoute>
+            }
+          >
+          </Route>
 
           {/* Fallback */}
           <Route path="*" element={<RoleHomeRedirect />} />
