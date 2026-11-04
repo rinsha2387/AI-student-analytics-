@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { getHomePath } from "../utils/roleHome";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -175,14 +176,9 @@ const Register = () => {
           : "Account created successfully!",
       );
 
-      // First person of an institution -> manager dashboard.
-      // People who join later -> sales side, which shows
-      // "waiting for manager approval" until they are accepted.
-      navigate(
-        data.user.role === "sales"
-          ? "/sales/financial-impact"
-          : "/manager/dashboard",
-      );
+      // First person of an institution -> /manager/dashboard.
+      // People who join later -> /waiting-approval until the manager accepts.
+      navigate(getHomePath(data.user));
     } catch (error) {
       console.error("Verify OTP Error:", error);
       alert("Unable to connect to the server.");

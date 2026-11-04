@@ -18,8 +18,17 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["admin", "manager","sales"],
+      enum: ["admin", "manager", "sales"],
       default: "manager",
+    },
+
+    // active   = can use the app
+    // pending  = waiting for the manager to accept
+    // rejected = manager rejected the request
+    status: {
+      type: String,
+      enum: ["active", "pending", "rejected"],
+      default: "active",
     },
 
     institution: {
@@ -37,11 +46,6 @@ const userSchema = new mongoose.Schema(
           return this.role === "manager";
         },
         trim: true,
-      },
-      status: {
-        type: String,
-        enum: ["active", "pending", "rejected"],
-        default: "active",
       },
     },
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { getHomePath } from "../utils/roleHome";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -163,14 +164,12 @@ const Login = () => {
       // Save login information through AuthContext
       login(data.token, data.user);
 
-      // Redirect based on CURRENT role from backend
-      if (data.user.role === "admin") {
-        navigate("/admin/dashboard");
-      } else if (data.user.role === "sales") {
-        navigate("/sales/financial-impact");
-      } else {
-        navigate("/manager/dashboard");
-      }
+      // Go to the right page for this person:
+      //   waiting for approval -> /waiting-approval
+      //   admin   -> /admin/dashboard
+      //   manager -> /manager/dashboard
+      //   sales   -> /sales/dashboard
+      navigate(getHomePath(data.user));
     } catch (error) {
       setError(error.message);
     } finally {

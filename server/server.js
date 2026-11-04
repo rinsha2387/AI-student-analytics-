@@ -18,13 +18,20 @@ const aiConfigurationRoutes = require("./routes/aiConfigurationRoutes");
 const analysisConfigurationRoutes = require("./routes/analysisConfigurationRoutes");
 const teamRoutes = require("./routes/teamRoutes");
 
+// Used by the waiting page and the app to read the CURRENT role and status.
+// It must come before app.use("/api/auth", authRoutes).
+const protect = require("./middleware/authMiddleware");
+const { getMe } = require("./controllers/authController");
+
+app.get("/api/auth/me", protect, getMe);
+
 app.use("/api/auth", authRoutes);
-app.use("/api/admin",adminRoutes);
-app.use("/api/dataset",datasetRoutes);
-app.use("/api/admin/ai-prompt",aiPromptRoutes);
-app.use("/api/analysis" , analysisRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/dataset", datasetRoutes);
+app.use("/api/admin/ai-prompt", aiPromptRoutes);
+app.use("/api/analysis", analysisRoutes);
 app.use("/api/admin/ai-config", aiConfigurationRoutes);
-app.use("/api/admin/analysis-config",analysisConfigurationRoutes);
+app.use("/api/admin/analysis-config", analysisConfigurationRoutes);
 app.use("/api/team", teamRoutes);
 
 const PORT = process.env.PORT || 5000;

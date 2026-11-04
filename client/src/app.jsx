@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import WaitingApproval from "./pages/WaitingApproval";
 import ManagerDashboard from "./pages/manager/Dashboard";
 import AdminDashboard from "./pages/admin/Dashboard";
 import UploadDataset from "./pages/manager/uploadDataset";
@@ -13,12 +14,14 @@ import AIAnalysis from "./pages/manager/AIAnalysis";
 import TeamManagement from "./pages/manager/TeamManagment";
 import RoleRoute from "./components/RoleRoute";
 import SalesLayout from "./components/sales/SalesLayout";
-
+import SalesDashboard from "./pages/sales/SalesDashboard";
 
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { getHomePath } from "./utils/roleHome";
 
-
+// Sends each person to the right place (login, waiting page,
+// admin, manager or sales dashboard).
 const RoleHomeRedirect = () => {
   const { user, loading, isAuthenticated } = useAuth();
 
@@ -34,15 +37,7 @@ const RoleHomeRedirect = () => {
     return <Navigate to="/login" replace />;
   }
 
-  if (user.role === "admin") {
-    return <Navigate to="/admin/dashboard" replace />;
-  }
-
-  if (user.role === "manager") {
-    return <Navigate to="/manager/dashboard" replace />;
-  }
-
-  return <Navigate to="/login" replace />;
+  return <Navigate to={getHomePath(user)} replace />;
 };
 
 function App() {
@@ -52,6 +47,9 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+
+          {/* Normal waiting page for people the manager has not accepted yet */}
+          <Route path="/waiting-approval" element={<WaitingApproval />} />
 
           {/* Manager routes */}
           <Route
@@ -70,7 +68,24 @@ function App() {
             <Route path="team" element={<TeamManagement />} />
           </Route>
 
-          {/* Admin route */}
+          {/* Sales routes (only for accepted sales people) */}
+          <Route
+            path="/sales"
+            element={
+              <RoleRoute role="sales">
+                <SalesLayout />
+              </RoleRoute>
+            }
+          >
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<SalesDashboard />} />
+            {/* Replace these with your own sales pages when they are ready */}
+            <Route path="financial-impact" element={<SalesDashboard />} />
+            <Route path="fees-due" element={<SalesDashboard />} />
+            <Route path="fees-paid" element={<SalesDashboard />} />
+          </Route>
+
+          {/* Admin routes */}
           <Route
             path="/admin/dashboard"
             element={
@@ -112,15 +127,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/sales"
-            element={
-              <RoleRoute role="sales">
-                <SalesLayout />
-              </RoleRoute>
-            }
-          >
-          </Route>
 
           {/* Fallback */}
           <Route path="*" element={<RoleHomeRedirect />} />
