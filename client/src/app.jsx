@@ -11,6 +11,8 @@ import AIPrompts from "./pages/admin/AIPrompts";
 import AIConfiguration from "./pages/admin/AIConfiguration";
 import AnalysisConfiguration from "./pages/admin/AnalysisConfiguration";
 import AIAnalysis from "./pages/manager/AIAnalysis";
+import StudentInsights from "./pages/manager/StudentInsight";
+import AttendanceAnalytics from "./pages/manager/AttendanceAnalytics";
 import TeamManagement from "./pages/manager/TeamManagment";
 import RoleRoute from "./components/RoleRoute";
 import SalesLayout from "./components/sales/SalesLayout";
@@ -65,6 +67,10 @@ function App() {
             <Route path="upload-data" element={<UploadDataset />} />
             <Route path="ai-analysis" element={<AIAnalysis />} />
             <Route path="ai-analysis/:datasetId" element={<AIAnalysis />} />
+            <Route path="student-insights" element={<StudentInsights />} />
+            <Route path="student-insights/:datasetId" element={<StudentInsights />} />
+            <Route path="attendance-analytics" element={<AttendanceAnalytics />} />
+            <Route path="attendance-analytics/:datasetId" element={<AttendanceAnalytics />} />
             <Route path="team" element={<TeamManagement />} />
           </Route>
 

@@ -64,6 +64,13 @@ const ManagerDashboard = () => {
 
   const firstName = managerName.split(" ")[0];
 
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  }, []);
+
   const currentDate = useMemo(() => {
     return new Intl.DateTimeFormat("en-US", {
       weekday: "long",
@@ -463,7 +470,7 @@ const ManagerDashboard = () => {
               </p>
 
               <h2 className="text-[30px] font-bold tracking-[-1px] text-[#172f52] sm:text-[34px]">
-                Good morning, {firstName}
+                {greeting}, {firstName}
               </h2>
 
               <p className="mt-1 text-[13px] text-[#8090a8]">
