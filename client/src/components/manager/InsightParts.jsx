@@ -2,6 +2,7 @@ import { useState } from "react";
 
 // Small parts shared by the manager analytics pages
 // (Attendance analysis now, and the other analytics pages later).
+// Sizes and colors match ManagerDashboard.jsx.
 
 export const formatNumber = (value) =>
   value === null || value === undefined
@@ -22,34 +23,46 @@ export const formatDate = (value) => {
 };
 
 export const PALETTES = {
-  indigo: ["#c9cff4", "#a3aeea", "#7d8be0", "#5269d6"],
-  teal: ["#bfe7df", "#8fd3c6", "#52b9a8", "#14a58f"],
+  indigo: ["#c9cff4", "#a3aeea", "#7d8be0", "#5268d8"],
+  teal: ["#bfe7df", "#8fd3c6", "#52b9a8", "#14aa9d"],
 };
 
-export function StatCard({ icon: Icon, tone = "indigo", value, label, description }) {
+// Same card look as the dashboard.
+const CARD =
+  "rounded-xl border border-[#e4e8ef] bg-white shadow-[0_2px_8px_rgba(32,45,72,0.03)]";
+
+export function StatCard({
+  icon: Icon,
+  tone = "indigo",
+  value,
+  label,
+  description,
+}) {
   const tones = {
-    indigo: "bg-indigo-50 text-indigo-600",
-    red: "bg-red-50 text-red-500",
-    orange: "bg-orange-50 text-orange-500",
+    indigo: "bg-indigo-50 text-indigo-500",
+    red: "bg-red-50 text-red-400",
+    orange: "bg-orange-50 text-orange-400",
     purple: "bg-purple-50 text-purple-500",
-    teal: "bg-emerald-50 text-emerald-600",
+    teal: "bg-emerald-50 text-emerald-500",
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className={`p-5 ${CARD}`}>
       <div
-        className={`flex h-11 w-11 items-center justify-center rounded-xl ${
+        className={`flex h-10 w-10 items-center justify-center rounded-xl ${
           tones[tone] || tones.indigo
         }`}
       >
-        <Icon size={21} />
+        <Icon size={20} />
       </div>
 
-      <p className="mt-5 break-words text-[28px] font-semibold leading-none tracking-tight text-slate-900">
+      <p className="mt-4 break-words text-[26px] font-bold leading-none tracking-[-0.5px] text-[#172f52]">
         {value}
       </p>
-      <p className="mt-3 text-sm font-semibold text-slate-800">{label}</p>
-      <p className="mt-1 text-xs text-slate-400">{description}</p>
+      <p className="mt-2 text-[12px] font-semibold text-[#243c5e]">{label}</p>
+      <p className="mt-0.5 text-[11px] leading-4 text-[#8c9bb0]">
+        {description}
+      </p>
     </div>
   );
 }
@@ -64,6 +77,8 @@ export function BarChart({
   emptyText = "No data available for this chart.",
 }) {
   const colors = PALETTES[palette] || PALETTES.indigo;
+  // Each bar takes up to 20% of the width (less when there are more than 5).
+  const barWidth = `${Math.min(20, 100 / Math.max(data.length, 1))}%`;
   const hasData = data.some((item) => item.value > 0);
   const max = Math.max(...data.map((item) => item.value), 0);
 
@@ -72,29 +87,31 @@ export function BarChart({
     if (max <= 0) return 4;
     const rough = max / 4;
     const power = 10 ** Math.floor(Math.log10(rough));
-    const step = [1, 2, 2.5, 5, 10].map((m) => m * power).find((s) => s >= rough);
+    const step = [1, 2, 2.5, 5, 10]
+      .map((m) => m * power)
+      .find((s) => s >= rough);
     return step * 4;
   })();
 
   const ticks = [0, 1, 2, 3, 4].map((i) => (niceMax / 4) * i);
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="text-lg font-semibold tracking-tight text-slate-900">{title}</h2>
-      <p className="mt-1 text-xs text-slate-400">{subtitle}</p>
+    <section className={`p-6 ${CARD}`}>
+      <h2 className="text-[16px] font-semibold text-[#172f52]">{title}</h2>
+      <p className="mt-1 text-[12px] text-[#8b9ab0]">{subtitle}</p>
 
       {!hasData ? (
-        <div className="flex h-52 items-center justify-center text-sm text-slate-400">
+        <div className="mt-6 flex h-[200px] items-center justify-center rounded-lg bg-[#f7f8fc] text-[12px] text-[#8998ae]">
           {emptyText}
         </div>
       ) : (
         <>
           <div className="mt-6 flex">
-            <div className="relative h-52 w-10 shrink-0">
+            <div className="relative h-[200px] w-10 shrink-0">
               {ticks.map((tick) => (
                 <span
                   key={tick}
-                  className="absolute right-2 translate-y-1/2 text-xs text-slate-400"
+                  className="absolute right-2 translate-y-1/2 text-[11px] text-[#9aa7ba]"
                   style={{ bottom: `${(tick / niceMax) * 100}%` }}
                 >
                   {Number.isInteger(tick) ? tick : tick.toFixed(1)}
@@ -102,11 +119,11 @@ export function BarChart({
               ))}
             </div>
 
-            <div className="relative h-52 flex-1">
+            <div className="relative h-[200px] flex-1">
               {ticks.map((tick) => (
                 <div
                   key={tick}
-                  className="absolute left-0 right-0 border-t border-dashed border-slate-200"
+                  className="absolute left-0 right-0 border-t border-dashed border-[#e5e9f0]"
                   style={{ bottom: `${(tick / niceMax) * 100}%` }}
                 />
               ))}
@@ -116,9 +133,10 @@ export function BarChart({
                   <div
                     key={item.label}
                     title={item.note || ""}
-                    className="flex h-full w-1/5 flex-col items-center justify-end"
+                    className="flex h-full flex-col items-center justify-end"
+                    style={{ width: barWidth }}
                   >
-                    <span className="mb-1 text-[11px] font-medium text-slate-500">
+                    <span className="mb-1 text-[11px] font-semibold text-[#243c5e]">
                       {item.empty ? "–" : item.value}
                     </span>
                     {!item.empty && (
@@ -137,9 +155,14 @@ export function BarChart({
             </div>
           </div>
 
-          <div className="ml-10 flex justify-around px-3 pt-2 text-xs text-slate-400">
+          <div className="ml-10 flex justify-around px-3 pt-2 text-[11px] text-[#9aa7ba]">
             {data.map((item) => (
-              <span key={item.label} className="w-1/5 text-center">
+              <span
+                key={item.label}
+                title={item.label}
+                className="truncate px-0.5 text-center"
+                style={{ width: barWidth }}
+              >
                 {item.label}
               </span>
             ))}
@@ -158,12 +181,10 @@ export function InsightBlock({ label, item, note }) {
 
   return (
     <div>
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-        {label}
-      </p>
+      <p className="text-xs font-semibold text-[#8493a9]">{label}</p>
 
       <p
-        className={`mt-1 whitespace-pre-line text-sm leading-6 text-slate-600 ${
+        className={`mt-1 whitespace-pre-line text-sm leading-6 text-[#4d607c] ${
           isLong && !expanded ? "line-clamp-4" : ""
         }`}
       >
@@ -174,20 +195,20 @@ export function InsightBlock({ label, item, note }) {
         <button
           type="button"
           onClick={() => setExpanded((value) => !value)}
-          className="mt-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800"
+          className="mt-1 text-[12px] font-semibold text-[#5268d8] hover:underline"
         >
           {expanded ? "Show less" : "Read more"}
         </button>
       )}
 
-      {note && <p className="mt-2 text-xs italic text-slate-400">{note}</p>}
+      {note && <p className="mt-2 text-xs italic text-[#9aa7ba]">{note}</p>}
     </div>
   );
 }
 
 // Smooth line + soft area chart for values from 0 to 100 (no chart library).
 // data: [{ label, value }]  (needs at least 2 points)
-export function LineChart({ title, subtitle, data, color = "#14a58f" }) {
+export function LineChart({ title, subtitle, data, color = "#14aa9d" }) {
   const W = 600;
   const H = 240;
   const left = 40;
@@ -201,9 +222,14 @@ export function LineChart({ title, subtitle, data, color = "#14a58f" }) {
   const yOf = (value) =>
     top + plotH - (Math.min(Math.max(value, 0), 100) / 100) * plotH;
   const xOf = (index) =>
-    data.length === 1 ? left + plotW / 2 : left + (index / (data.length - 1)) * plotW;
+    data.length === 1
+      ? left + plotW / 2
+      : left + (index / (data.length - 1)) * plotW;
 
-  const points = data.map((item, index) => ({ x: xOf(index), y: yOf(item.value) }));
+  const points = data.map((item, index) => ({
+    x: xOf(index),
+    y: yOf(item.value),
+  }));
 
   // Smooth curve through the points.
   let line = `M ${points[0].x} ${points[0].y}`;
@@ -228,11 +254,16 @@ export function LineChart({ title, subtitle, data, color = "#14a58f" }) {
   const labelStep = Math.ceil(data.length / 8);
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="text-lg font-semibold tracking-tight text-slate-900">{title}</h2>
-      <p className="mt-1 text-xs text-slate-400">{subtitle}</p>
+    <section className={`p-6 ${CARD}`}>
+      <h2 className="text-[16px] font-semibold text-[#172f52]">{title}</h2>
+      <p className="mt-1 text-[12px] text-[#8b9ab0]">{subtitle}</p>
 
-      <svg viewBox={`0 0 ${W} ${H}`} className="mt-4 w-full" role="img" aria-label={title}>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="mt-4 w-full"
+        role="img"
+        aria-label={title}
+      >
         <defs>
           <linearGradient id="lineAreaGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={color} stopOpacity="0.16" />
@@ -247,27 +278,54 @@ export function LineChart({ title, subtitle, data, color = "#14a58f" }) {
               x2={W - right}
               y1={yOf(tick)}
               y2={yOf(tick)}
-              stroke="#e2e8f0"
+              stroke="#e5e9f0"
               strokeDasharray="4 4"
             />
-            <text x={left - 8} y={yOf(tick) + 4} textAnchor="end" fontSize="11" fill="#94a3b8">
+            <text
+              x={left - 8}
+              y={yOf(tick) + 4}
+              textAnchor="end"
+              fontSize="11"
+              fill="#9aa7ba"
+            >
               {tick}
             </text>
           </g>
         ))}
 
         <path d={area} fill="url(#lineAreaGradient)" />
-        <path d={line} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
+        <path
+          d={line}
+          fill="none"
+          stroke={color}
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        />
 
         {points.map((point, index) => (
-          <circle key={data[index].label} cx={point.x} cy={point.y} r="3.5" fill="#fff" stroke={color} strokeWidth="2">
+          <circle
+            key={data[index].label}
+            cx={point.x}
+            cy={point.y}
+            r="3.5"
+            fill="#fff"
+            stroke={color}
+            strokeWidth="2"
+          >
             <title>{`${data[index].label}: ${data[index].value}%`}</title>
           </circle>
         ))}
 
         {data.map((item, index) =>
           index % labelStep === 0 ? (
-            <text key={item.label} x={points[index].x} y={H - 8} textAnchor="middle" fontSize="11" fill="#94a3b8">
+            <text
+              key={item.label}
+              x={points[index].x}
+              y={H - 8}
+              textAnchor="middle"
+              fontSize="11"
+              fill="#9aa7ba"
+            >
               {item.label}
             </text>
           ) : null,
@@ -313,9 +371,12 @@ export function MultiLineChart({ title, subtitle, labels, series }) {
   const ticks = [0, 25, 50, 75, 100];
   const baseY = top + plotH;
 
-  const yOf = (value) => top + plotH - (Math.min(Math.max(value, 0), 100) / 100) * plotH;
+  const yOf = (value) =>
+    top + plotH - (Math.min(Math.max(value, 0), 100) / 100) * plotH;
   const xOf = (index) =>
-    labels.length === 1 ? left + plotW / 2 : left + (index / (labels.length - 1)) * plotW;
+    labels.length === 1
+      ? left + plotW / 2
+      : left + (index / (labels.length - 1)) * plotW;
 
   const lines = series.map((item, seriesIndex) => {
     const points = item.values
@@ -333,24 +394,32 @@ export function MultiLineChart({ title, subtitle, labels, series }) {
   const labelStep = Math.ceil(labels.length / 8);
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className={`p-6 ${CARD}`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-slate-900">{title}</h2>
-          <p className="mt-1 text-xs text-slate-400">{subtitle}</p>
+          <h2 className="text-[16px] font-semibold text-[#172f52]">{title}</h2>
+          <p className="mt-1 text-[12px] text-[#8b9ab0]">{subtitle}</p>
         </div>
 
-        <div className="flex items-center gap-4 text-xs text-slate-500">
+        <div className="flex items-center gap-4 text-[11px] text-[#7788a1]">
           {series.map((item) => (
             <span key={item.name} className="inline-flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full" style={{ background: item.color }} />
+              <span
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ background: item.color }}
+              />
               {item.name}
             </span>
           ))}
         </div>
       </div>
 
-      <svg viewBox={`0 0 ${W} ${H}`} className="mt-4 w-full" role="img" aria-label={title}>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="mt-4 w-full"
+        role="img"
+        aria-label={title}
+      >
         <defs>
           {lines.map((line) => (
             <linearGradient
@@ -374,10 +443,16 @@ export function MultiLineChart({ title, subtitle, labels, series }) {
               x2={W - right}
               y1={yOf(tick)}
               y2={yOf(tick)}
-              stroke="#e2e8f0"
+              stroke="#e5e9f0"
               strokeDasharray="4 4"
             />
-            <text x={left - 8} y={yOf(tick) + 4} textAnchor="end" fontSize="11" fill="#94a3b8">
+            <text
+              x={left - 8}
+              y={yOf(tick) + 4}
+              textAnchor="end"
+              fontSize="11"
+              fill="#9aa7ba"
+            >
               {tick}
             </text>
           </g>
@@ -419,7 +494,14 @@ export function MultiLineChart({ title, subtitle, labels, series }) {
 
         {labels.map((label, index) =>
           index % labelStep === 0 ? (
-            <text key={label} x={xOf(index)} y={H - 8} textAnchor="middle" fontSize="11" fill="#94a3b8">
+            <text
+              key={label}
+              x={xOf(index)}
+              y={H - 8}
+              textAnchor="middle"
+              fontSize="11"
+              fill="#9aa7ba"
+            >
               {label}
             </text>
           ) : null,

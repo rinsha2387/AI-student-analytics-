@@ -294,7 +294,7 @@ const getIndicators = (student) => {
   return indicators;
 };
 
-/* ---------- UI helpers (new design) ---------- */
+/* ---------- UI helpers ---------- */
 
 const AVATAR_COLORS = [
   "bg-indigo-50 text-indigo-600",
@@ -307,9 +307,12 @@ const AVATAR_COLORS = [
 const PRIORITY_STYLES = {
   High: "bg-red-50 text-red-600",
   Medium: "bg-orange-50 text-orange-600",
-  Low: "bg-emerald-50 text-emerald-700",
+  Low: "bg-[#eaf8f2] text-[#1b9c72]",
   Review: "bg-slate-100 text-slate-600",
 };
+
+const CARD =
+  "rounded-xl border border-[#e4e8ef] bg-white shadow-[0_2px_8px_rgba(32,45,72,0.03)]";
 
 const getInitials = (name) =>
   String(name || "")
@@ -321,20 +324,20 @@ const getInitials = (name) =>
 
 function InsightCard({ title, description, linkText, onClick }) {
   return (
-    <article className="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h3 className="text-[15px] font-medium text-slate-900">{title}</h3>
+    <article className={`flex flex-col p-6 ${CARD}`}>
+      <h3 className="text-lg font-semibold text-[#172f52]">{title}</h3>
 
-      <p className="mt-3 flex-1 text-sm leading-6 text-slate-500">
+      <p className="mt-2 flex-1 text-sm leading-6 text-[#6f8099]">
         {description}
       </p>
 
       <button
         type="button"
         onClick={onClick}
-        className="mt-5 inline-flex items-center gap-1.5 self-start text-sm font-semibold text-indigo-600 hover:text-indigo-800 print:hidden"
+        className="mt-4 inline-flex items-center gap-1 self-start text-sm font-semibold text-[#5268d8] hover:underline print:hidden"
       >
         {linkText}
-        <ArrowRight size={15} />
+        <ArrowRight size={13} />
       </button>
     </article>
   );
@@ -342,13 +345,11 @@ function InsightCard({ title, description, linkText, onClick }) {
 
 function StatCard({ label, value }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-        {label}
-      </p>
-      <p className="mt-2 break-words text-2xl font-semibold text-slate-900">
+    <div className={`p-5 ${CARD}`}>
+      <p className="break-words text-[22px] font-bold leading-none tracking-[-0.5px] text-[#172f52]">
         {value}
       </p>
+      <p className="mt-2 text-[12px] font-semibold text-[#243c5e]">{label}</p>
     </div>
   );
 }
@@ -742,422 +743,405 @@ export default function AIAnalysis() {
 
   if (loading) {
     return (
-      <main className="flex min-h-[60vh] items-center justify-center bg-white">
+      <div className="flex min-h-[60vh] items-center justify-center">
         <div className="text-center">
           <LoaderCircle
-            className="mx-auto animate-spin text-indigo-600"
-            size={34}
+            className="mx-auto animate-spin text-[#5268d8]"
+            size={30}
           />
-          <p className="mt-4 text-sm text-slate-500">
+          <p className="mt-4 text-[12px] text-[#6f8099]">
             Loading your saved AI analysis...
           </p>
         </div>
-      </main>
+      </div>
     );
   }
 
   if (error || !report) {
     return (
-      <main className="min-h-[60vh] bg-white px-5 py-10 sm:px-8">
-        <div className="mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <AlertCircle className="mx-auto text-red-500" size={38} />
+      <div className="mx-auto max-w-[1400px] px-5 py-7 lg:px-10">
+        <div className={`mx-auto max-w-xl p-8 text-center ${CARD}`}>
+          <AlertCircle className="mx-auto text-red-500" size={34} />
 
-          <h1 className="mt-4 text-xl font-semibold text-slate-900">
-            AI Analysis Report
+          <h1 className="mt-4 text-[16px] font-semibold text-[#172f52]">
+            Could not load the AI report
           </h1>
 
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-500">
+          <p className="mt-2 text-[12px] leading-5 text-[#6f8099]">
             {error || "No report is available."}
           </p>
 
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <button
               onClick={loadReport}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-700"
+              className="inline-flex items-center gap-2 rounded-lg bg-[#5268d8] px-4 py-2.5 text-[12px] font-semibold text-white hover:bg-[#465bc5]"
             >
-              <RefreshCw size={16} />
+              <RefreshCw size={15} />
               Try again
             </button>
 
             <button
               onClick={() => navigate("/manager/upload-data")}
-              className="rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              className="rounded-lg border border-[#dfe4ed] bg-white px-4 py-2.5 text-[12px] font-semibold text-[#344867] hover:bg-[#fafbfc]"
             >
               Upload dataset
             </button>
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#fafafc] px-5 py-8 sm:px-8 lg:px-10 print:bg-white print:px-0 print:py-0">
-      <div className="mx-auto max-w-[1600px]">
-        {/* Report heading */}
-        <div className="mb-6 flex flex-col justify-between gap-5 xl:flex-row xl:items-center">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-              AI Analysis Report
-            </h1>
+    <div className="mx-auto max-w-[1400px] px-5 py-7 lg:px-10 print:max-w-none print:px-0 print:py-0">
+      {/* Report heading */}
+      <section className="mb-7 flex flex-col justify-between gap-4 xl:flex-row xl:items-end">
+        <div>
+          <h1 className="text-[28px] font-bold tracking-[-0.8px] text-[#172f52]">
+            AI analysis report
+          </h1>
 
-            <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-              <span>{dataset.name || dataset.originalFileName}</span>
-              <span>·</span>
-              <span>{metrics.totalStudents} student records</span>
-              <span>·</span>
-              <span>
-                {formatDate(analysis.completedAt || analysis.updatedAt)}
-              </span>
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 print:hidden">
-            <span className="inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
-              <CheckCircle2 size={15} />
-              Completed
-            </span>
-
-            <button
-              onClick={() => window.print()}
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-            >
-              <FileDown size={17} />
-              Save as PDF
-            </button>
-
-            <button
-              onClick={downloadCSV}
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-            >
-              <Download size={17} />
-              Download CSV
-            </button>
-          </div>
-        </div>
-
-        {/* Data notice */}
-        <div className="mb-6 flex items-start gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/70 px-5 py-4 text-sm leading-6 text-indigo-800">
-          <Sparkles className="mt-0.5 shrink-0" size={18} />
-          <p>
-            This report uses the saved AI analysis and uploaded student records.
-            Risk indicators are intended to support human review, not to make
-            definitive judgments about students.
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 text-[13px] text-[#6f8099]">
+            <span>{dataset.name || dataset.originalFileName}</span>
+            <span aria-hidden="true">·</span>
+            <span>{metrics.totalStudents} student records</span>
+            <span aria-hidden="true">·</span>
+            <span>{formatDate(analysis.completedAt || analysis.updatedAt)}</span>
           </p>
         </div>
 
-        {/* Executive summary */}
-        <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <div className="mb-5 flex items-center gap-2.5">
-            <Sparkles className="text-indigo-600" size={20} />
-            <h2 className="text-base font-semibold text-slate-900">
-              Executive summary
-            </h2>
-          </div>
-
-          <ul className="max-w-5xl space-y-3">
-            {summaryPoints.map((point, index) => (
-              <li
-                key={`${index}-${point}`}
-                className="flex items-start gap-3 text-sm leading-6 text-slate-700"
-              >
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600" />
-                <span>{point}</span>
-              </li>
-            ))}
-          </ul>
-
-          <p className="mt-4 text-sm leading-6 text-slate-500">
-            Generated from the saved analysis for{" "}
-            <strong className="font-semibold text-slate-700">
-              {dataset.name || dataset.originalFileName}
-            </strong>
-            . Review the indicators against the original student records before
-            taking action.
-          </p>
-        </section>
-
-        {/* Stat cards */}
-        <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-8">
-          <StatCard label="Students analyzed" value={metrics.totalStudents} />
-          <StatCard label="Requiring review" value={metrics.reviewCount} />
-          <StatCard
-            label="Attendance concerns"
-            value={metrics.attendanceConcerns}
-          />
-          <StatCard
-            label="Academic concerns"
-            value={metrics.academicConcerns}
-          />
-          <StatCard
-            label="Avg. attendance"
-            value={
-              metrics.averageAttendance === null
-                ? "Not available"
-                : `${metrics.averageAttendance}%`
-            }
-          />
-          <StatCard
-            label="Avg. exam marks"
-            value={
-              metrics.averageMarks === null
-                ? "Not available"
-                : metrics.averageMarks
-            }
-          />
-          <StatCard
-            label="Outstanding fees"
-            value={formatCurrency(metrics.financialIndicators)}
-          />
-          <StatCard label="Fees paid" value={formatCurrency(metrics.feesPaid)} />
-        </section>
-
-        {/* Insight cards */}
-        <section className="mb-6 grid grid-cols-1 gap-5 lg:grid-cols-3">
-          <InsightCard
-            title="Academic insights"
-            description={academicInsights}
-            linkText="Explore academic data"
-            onClick={() => navigate("/manager/academic-analytics")}
-          />
-
-          <InsightCard
-            title="Attendance insights"
-            description={attendanceInsights}
-            linkText="Explore attendance"
-            onClick={() => navigate("/manager/attendance-analytics")}
-          />
-
-          <InsightCard
-            title="Engagement patterns"
-            description={behaviorInsights}
-            linkText="Explore patterns"
-            onClick={() => navigate("/manager/behavior-insights")}
-          />
-        </section>
-
-        {/* Students requiring review */}
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-col justify-between gap-4 px-7 py-6 sm:flex-row sm:items-center">
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900">
-                Students requiring review
-              </h2>
-
-              <p className="mt-1 text-sm text-slate-500">
-                Indicators are signals for human review, not definitive risk
-                classifications.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search students..."
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 sm:w-52 print:hidden"
-              />
-
-              <span className="text-sm font-medium text-slate-500">
-                {filteredStudents.length} records
-              </span>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[950px] border-collapse text-left">
-              <thead>
-                <tr className="border-y border-slate-200 bg-slate-50/70">
-                  {[
-                    "Student",
-                    "Attendance",
-                    "Academic status",
-                    "Indicators",
-                    "Priority",
-                  ].map((heading) => (
-                    <th
-                      key={heading}
-                      className="px-7 py-4 text-[11px] font-semibold uppercase tracking-wider text-slate-500"
-                    >
-                      {heading}
-                    </th>
-                  ))}
-                  <th className="px-7 py-4 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-500 print:hidden">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {paginatedStudents.map((student, index) => (
-                  <tr
-                    key={`${student.id}-${index}`}
-                    className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60"
-                  >
-                    <td className="px-7 py-4">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-                            AVATAR_COLORS[index % AVATAR_COLORS.length]
-                          }`}
-                        >
-                          {getInitials(student.name)}
-                        </div>
-
-                        <div>
-                          <p className="text-sm font-semibold text-slate-900">
-                            {student.name}
-                          </p>
-                          <p className="mt-0.5 text-xs text-slate-500">
-                            {student.id}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className="px-7 py-4">
-                      <span
-                        className={`text-sm ${
-                          student.attendance !== null && student.attendance < 60
-                            ? "font-semibold text-red-500"
-                            : "text-slate-600"
-                        }`}
-                      >
-                        {student.attendance === null
-                          ? "Not available"
-                          : `${student.attendance}%`}
-                      </span>
-                    </td>
-
-                    <td className="px-7 py-4">
-                      {student.academicStatus === "Needs review" ? (
-                        <span className="inline-flex items-center gap-1.5 text-sm text-orange-500">
-                          <TrendingDown size={15} />
-                          {student.academicStatus}
-                        </span>
-                      ) : (
-                        <span className="text-sm text-slate-600">
-                          {student.academicStatus}
-                        </span>
-                      )}
-                    </td>
-
-                    <td className="px-7 py-4">
-                      <span
-                        className="text-sm text-slate-600"
-                        title={student.indicators.join(", ")}
-                      >
-                        {student.indicators.length}
-                      </span>
-                    </td>
-
-                    <td className="px-7 py-4">
-                      <span
-                        className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold ${
-                          PRIORITY_STYLES[student.priority] ||
-                          PRIORITY_STYLES.Review
-                        }`}
-                      >
-                        <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                        {student.priority}
-                      </span>
-                    </td>
-
-                    <td className="px-7 py-4 text-right print:hidden">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          navigate(
-                            `/manager/student-insights?student=${encodeURIComponent(
-                              student.id,
-                            )}`,
-                          )
-                        }
-                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-800"
-                      >
-                        View details
-                        <ArrowRight size={15} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-
-                {paginatedStudents.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center">
-                      <Activity className="mx-auto text-slate-300" size={30} />
-
-                      <p className="mt-3 font-semibold text-slate-700">
-                        No student records to display
-                      </p>
-
-                      <p className="mt-1 text-sm text-slate-500">
-                        No matching review records were found for this report.
-                      </p>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {filteredStudents.length > 0 && (
-            <div className="flex flex-col gap-3 border-t border-slate-200 px-7 py-4 sm:flex-row sm:items-center sm:justify-between print:hidden">
-              <p className="text-sm text-slate-500">
-                Showing {startIndex + 1}–
-                {Math.min(startIndex + studentsPerPage, filteredStudents.length)}{" "}
-                of {filteredStudents.length} students
-              </p>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Previous
-                </button>
-
-                <span className="text-sm text-slate-600">
-                  Page {currentPage} of {Math.max(totalPages, 1)}
-                </span>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setCurrentPage((page) => Math.min(page + 1, totalPages))
-                  }
-                  disabled={currentPage >= totalPages}
-                  className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
-
-          <div className="flex flex-col justify-between gap-3 border-t border-slate-200 px-7 py-4 sm:flex-row sm:items-center">
-            <p className="text-xs text-slate-500">
-              Source: {dataset.originalFileName || dataset.name}
-            </p>
-
-            <button
-              onClick={() => navigate("/manager/upload-data")}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800 print:hidden"
-            >
-              Analyze another dataset
-              <ArrowRight size={16} />
-            </button>
-          </div>
-        </section>
-
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
-          <span>Analysis ID: {analysis._id}</span>
-          <span>
-            Report generated from saved data · {formatDate(new Date())}
+        <div className="flex flex-wrap items-center gap-3 print:hidden">
+          <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#eaf8f2] px-3 py-2 text-[11px] font-semibold text-[#1b9c72]">
+            <CheckCircle2 size={14} />
+            Completed
           </span>
+
+          <button
+            onClick={() => window.print()}
+            className="inline-flex items-center gap-2 rounded-lg border border-[#dfe4ed] bg-white px-4 py-2.5 text-[12px] font-semibold text-[#344867] shadow-sm hover:bg-[#fafbfc]"
+          >
+            <FileDown size={16} />
+            Save as PDF
+          </button>
+
+          <button
+            onClick={downloadCSV}
+            className="inline-flex items-center gap-2 rounded-lg bg-[#5268d8] px-4 py-2.5 text-[12px] font-semibold text-white shadow-[0_5px_14px_rgba(82,104,216,0.25)] hover:bg-[#465bc5]"
+          >
+            <Download size={16} />
+            Download CSV
+          </button>
         </div>
+      </section>
+
+      {/* Data notice */}
+      <div className="mb-6 flex items-start gap-3 rounded-xl border border-[#dfe4f5] bg-[#f4f5ff] px-5 py-4 text-[12px] leading-5 text-[#4d607c]">
+        <Sparkles className="mt-0.5 shrink-0 text-[#5268d8]" size={16} />
+        <p>
+          This report uses the saved AI analysis and your uploaded student
+          records. The indicators help people review students. They are not
+          final judgments.
+        </p>
+      </div>
+
+      {/* Executive summary */}
+      <section className={`mb-6 p-6 ${CARD}`}>
+        <div className="mb-4 flex items-center gap-2">
+          <Sparkles className="text-[#5268d8]" size={18} />
+          <h2 className="text-[16px] font-semibold text-[#172f52]">
+            Executive summary
+          </h2>
+        </div>
+
+        <ul className="max-w-5xl space-y-2.5">
+          {summaryPoints.map((point, index) => (
+            <li
+              key={`${index}-${point}`}
+              className="flex items-start gap-3 text-[12px] leading-5 text-[#4d607c]"
+            >
+              <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#5268d8]" />
+              <span>{point}</span>
+            </li>
+          ))}
+        </ul>
+
+        <p className="mt-4 text-[12px] leading-5 text-[#8b9ab0]">
+          Generated from the saved analysis for{" "}
+          <strong className="font-semibold text-[#344867]">
+            {dataset.name || dataset.originalFileName}
+          </strong>
+          . Check the indicators against the original student records before you
+          take action.
+        </p>
+      </section>
+
+      {/* Stat cards */}
+      <section className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard label="Students analyzed" value={metrics.totalStudents} />
+        <StatCard label="Need review" value={metrics.reviewCount} />
+        <StatCard
+          label="Attendance concerns"
+          value={metrics.attendanceConcerns}
+        />
+        <StatCard label="Academic concerns" value={metrics.academicConcerns} />
+        <StatCard
+          label="Average attendance"
+          value={
+            metrics.averageAttendance === null
+              ? "N/A"
+              : `${metrics.averageAttendance}%`
+          }
+        />
+        <StatCard
+          label="Average exam marks"
+          value={metrics.averageMarks === null ? "N/A" : metrics.averageMarks}
+        />
+        <StatCard
+          label="Outstanding fees"
+          value={formatCurrency(metrics.financialIndicators)}
+        />
+        <StatCard label="Fees paid" value={formatCurrency(metrics.feesPaid)} />
+      </section>
+
+      {/* Insight cards */}
+      <section className="mb-6 grid grid-cols-1 gap-5 lg:grid-cols-3">
+        <InsightCard
+          title="Academic insights"
+          description={academicInsights}
+          linkText="Explore academic data"
+          onClick={() => navigate("/manager/academic-analytics")}
+        />
+
+        <InsightCard
+          title="Attendance insights"
+          description={attendanceInsights}
+          linkText="Explore attendance"
+          onClick={() => navigate("/manager/attendance-analytics")}
+        />
+
+        <InsightCard
+          title="Engagement patterns"
+          description={behaviorInsights}
+          linkText="Explore patterns"
+          onClick={() => navigate("/manager/behavior-insights")}
+        />
+      </section>
+
+      {/* Students requiring review */}
+      <section className={`overflow-hidden ${CARD}`}>
+        <div className="flex flex-col justify-between gap-4 px-6 py-5 sm:flex-row sm:items-center">
+          <div>
+            <h2 className="text-[16px] font-semibold text-[#172f52]">
+              Students requiring review
+            </h2>
+
+            <p className="mt-1 text-[12px] text-[#8b9ab0]">
+              These are signals for people to review, not final risk labels.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search students..."
+              className="w-full rounded-lg border border-[#e1e6ef] bg-white px-3 py-2.5 text-[12px] text-[#273d5e] outline-none placeholder:text-[#9aa7ba] focus:border-[#5268d8] sm:w-56 print:hidden"
+            />
+
+            <span className="whitespace-nowrap text-[12px] font-medium text-[#6f8099]">
+              {filteredStudents.length} records
+            </span>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[820px] border-collapse text-left">
+            <thead>
+              <tr className="border-y border-[#edf0f4] bg-[#fbfcfe] text-[11px] font-semibold text-[#8493a9]">
+                {[
+                  "Student",
+                  "Attendance",
+                  "Academic status",
+                  "Indicators",
+                  "Priority",
+                ].map((heading) => (
+                  <th key={heading} className="px-6 py-3">
+                    {heading}
+                  </th>
+                ))}
+                <th className="px-6 py-3 text-right print:hidden">
+                  <span className="sr-only">Action</span>
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {paginatedStudents.map((student, index) => (
+                <tr
+                  key={`${student.id}-${index}`}
+                  className="border-b border-[#edf0f4] transition last:border-0 hover:bg-[#fbfcff]"
+                >
+                  <td className="px-6 py-3.5">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
+                          AVATAR_COLORS[index % AVATAR_COLORS.length]
+                        }`}
+                      >
+                        {getInitials(student.name)}
+                      </div>
+
+                      <div className="min-w-0">
+                        <p className="truncate text-[13px] font-semibold text-[#273d5e]">
+                          {student.name}
+                        </p>
+                        <p className="mt-0.5 text-[11px] text-[#9aa7ba]">
+                          {student.id}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td className="whitespace-nowrap px-6 py-3.5">
+                    <span
+                      className={`text-[12px] ${
+                        student.attendance !== null && student.attendance < 60
+                          ? "font-semibold text-red-500"
+                          : "text-[#6f8099]"
+                      }`}
+                    >
+                      {student.attendance === null
+                        ? "Not available"
+                        : `${student.attendance}%`}
+                    </span>
+                  </td>
+
+                  <td className="whitespace-nowrap px-6 py-3.5">
+                    {student.academicStatus === "Needs review" ? (
+                      <span className="inline-flex items-center gap-1.5 text-[12px] text-orange-500">
+                        <TrendingDown size={14} />
+                        {student.academicStatus}
+                      </span>
+                    ) : (
+                      <span className="text-[12px] text-[#6f8099]">
+                        {student.academicStatus}
+                      </span>
+                    )}
+                  </td>
+
+                  <td className="px-6 py-3.5">
+                    <span
+                      className="text-[12px] text-[#6f8099]"
+                      title={student.indicators.join(", ")}
+                    >
+                      {student.indicators.length}
+                    </span>
+                  </td>
+
+                  <td className="px-6 py-3.5">
+                    <span
+                      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 py-1 text-[11px] font-semibold ${
+                        PRIORITY_STYLES[student.priority] ||
+                        PRIORITY_STYLES.Review
+                      }`}
+                    >
+                      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                      {student.priority}
+                    </span>
+                  </td>
+
+                  <td className="whitespace-nowrap px-6 py-3.5 text-right print:hidden">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        navigate(
+                          `/manager/student-insights?student=${encodeURIComponent(
+                            student.id,
+                          )}`,
+                        )
+                      }
+                      className="inline-flex items-center gap-1 text-[12px] font-semibold text-[#5268d8] hover:underline"
+                    >
+                      View details
+                      <ArrowRight size={13} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+
+              {paginatedStudents.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center">
+                    <Activity className="mx-auto text-[#c5cddb]" size={28} />
+
+                    <p className="mt-3 text-[13px] font-medium text-[#273d5e]">
+                      No student records to show
+                    </p>
+
+                    <p className="mt-1 text-[12px] text-[#8998ae]">
+                      No matching review records were found for this report.
+                    </p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {filteredStudents.length > 0 && (
+          <div className="flex flex-col gap-3 border-t border-[#edf0f4] px-6 py-4 sm:flex-row sm:items-center sm:justify-between print:hidden">
+            <p className="text-[12px] text-[#6f8099]">
+              Showing {startIndex + 1}–
+              {Math.min(startIndex + studentsPerPage, filteredStudents.length)}{" "}
+              of {filteredStudents.length} students
+            </p>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
+                disabled={currentPage === 1}
+                className="rounded-lg border border-[#dfe4ed] px-3.5 py-2 text-[12px] font-medium text-[#344867] hover:bg-[#fafbfc] disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Previous
+              </button>
+
+              <span className="text-[12px] text-[#6f8099]">
+                Page {currentPage} of {Math.max(totalPages, 1)}
+              </span>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setCurrentPage((page) => Math.min(page + 1, totalPages))
+                }
+                disabled={currentPage >= totalPages}
+                className="rounded-lg border border-[#dfe4ed] px-3.5 py-2 text-[12px] font-medium text-[#344867] hover:bg-[#fafbfc] disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col justify-between gap-3 border-t border-[#edf0f4] px-6 py-4 sm:flex-row sm:items-center">
+          <p className="text-[11px] text-[#8b9ab0]">
+            Source: {dataset.originalFileName || dataset.name}
+          </p>
+
+          <button
+            onClick={() => navigate("/manager/upload-data")}
+            className="inline-flex items-center gap-1 text-[12px] font-semibold text-[#5268d8] hover:underline print:hidden"
+          >
+            Analyze another dataset
+            <ArrowRight size={13} />
+          </button>
+        </div>
+      </section>
+
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-[11px] text-[#9aa7ba]">
+        <span>Analysis ID: {analysis._id}</span>
+        <span>Report generated from saved data · {formatDate(new Date())}</span>
       </div>
 
       {/* Print layout: omit navigation, search, and buttons. */}
@@ -1190,6 +1174,6 @@ export default function AIAnalysis() {
           }
         }
       `}</style>
-    </main>
+    </div>
   );
 }

@@ -13,6 +13,10 @@ import AnalysisConfiguration from "./pages/admin/AnalysisConfiguration";
 import AIAnalysis from "./pages/manager/AIAnalysis";
 import StudentInsights from "./pages/manager/StudentInsight";
 import AttendanceAnalytics from "./pages/manager/AttendanceAnalytics";
+import BehaviorInsights from "./pages/manager/BehaviorInsight";
+import FinancialImpact from "./pages/manager/financialImpact";
+import AnalysisHistory from "./pages/manager/AnalysisHistory";
+import AnalysisReport from "./pages/manager/AnalysisReport";
 import TeamManagement from "./pages/manager/TeamManagment";
 import RoleRoute from "./components/RoleRoute";
 import SalesLayout from "./components/sales/SalesLayout";
@@ -71,6 +75,13 @@ function App() {
             <Route path="student-insights/:datasetId" element={<StudentInsights />} />
             <Route path="attendance-analytics" element={<AttendanceAnalytics />} />
             <Route path="attendance-analytics/:datasetId" element={<AttendanceAnalytics />} />
+            <Route path="behavior-insights" element={<BehaviorInsights />} />
+            <Route path="behavior-insights/:datasetId" element={<BehaviorInsights />} />
+            <Route path="financial-impact" element={<FinancialImpact />} />
+            <Route path="financial-impact/:datasetId" element={<FinancialImpact />} />
+            <Route path="analysis-history" element={<AnalysisHistory />} />
+            <Route path="analysis-history/:analysisId" element={<AnalysisReport />} />
+            <Route path="reports" element={<Navigate to="/manager/analysis-history" replace />} />
             <Route path="team" element={<TeamManagement />} />
           </Route>
 

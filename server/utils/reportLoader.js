@@ -111,4 +111,124 @@ const loadReport = async (req) => {
   return { dataset, analysis };
 };
 
-module.exports = { loadReport, sendError, httpError };
+
+// All completed analyses of the institution, WITHOUT the heavy data
+// (records and AI result are not loaded here).
+const listCompletedAnalyses = async (req) => {
+  const ownerIds = await getInstitutionUserIds(req.user);
+
+  const analysisOwnerField = findOwnerField(Analysis);
+  const datasetOwnerField = findOwnerField(Dataset);
+
+  const filter = { status: "completed" };
+
+  if (analysisOwnerField) {
+    filter[analysisOwnerField] = { $in: ownerIds };
+  } else {
+    if (!datasetOwnerField) {
+      throw httpError(
+        500,
+        "Could not find the owner field in your Dataset or Analysis model. Add its name to OWNER_FIELDS in utils/reportLoader.js.",
+      );
+    }
+
+    const owned = await Dataset.find({ [datasetOwnerField]: { $in: ownerIds } })
+      .select("_id")
+      .lean();
+
+    filter.dataset = { $in: owned.map((d) => d._id) };
+  }
+
+  const fields = ["dataset", "createdAt", "updatedAt", "completedAt", analysisOwnerField]
+    .filter(Boolean)
+    .join(" ");
+
+  const analyses = await Analysis.find(filter).select(fields).lean();
+
+  const asId = (value) => String(value?._id || value || "");
+  const datasetIds = [...new Set(analyses.map((a) => asId(a.dataset)))].filter((id) =>
+    mongoose.Types.ObjectId.isValid(id),
+  );
+
+  // The aggregation counts the records without loading them.
+  const datasets = datasetIds.length
+    ? await Dataset.aggregate([
+        { $match: { _id: { $in: datasetIds.map((id) => new mongoose.Types.ObjectId(id)) } } },
+        {
+          $project: {
+            name: 1,
+            originalFileName: 1,
+            ...(datasetOwnerField ? { [datasetOwnerField]: 1 } : {}),
+            studentCount: {
+              $cond: [{ $isArray: "$records" }, { $size: "$records" }, 0],
+            },
+          },
+        },
+      ])
+    : [];
+
+  // Names of the people who created the analyses.
+  const creatorIds = new Set();
+
+  analyses.forEach((a) => {
+    if (analysisOwnerField && a[analysisOwnerField]) creatorIds.add(asId(a[analysisOwnerField]));
+  });
+
+  if (!analysisOwnerField && datasetOwnerField) {
+    datasets.forEach((d) => d[datasetOwnerField] && creatorIds.add(asId(d[datasetOwnerField])));
+  }
+
+  const creators = creatorIds.size
+    ? await User.find({ _id: { $in: [...creatorIds] } }).select("name").lean()
+    : [];
+
+  return { analyses, datasets, creators, analysisOwnerField, datasetOwnerField };
+};
+
+// One saved analysis (any date) with its dataset.
+// Same shape as the "latest analysis" API used by the AI Analysis page.
+const loadAnalysisById = async (req, analysisId) => {
+  if (!mongoose.Types.ObjectId.isValid(analysisId)) {
+    throw httpError(400, "Invalid report id");
+  }
+
+  const ownerIds = await getInstitutionUserIds(req.user);
+
+  const analysis = await Analysis.findById(analysisId).lean();
+
+  if (!analysis || analysis.status !== "completed") {
+    throw httpError(404, "Report not found");
+  }
+
+  const dataset = await Dataset.findById(analysis.dataset?._id || analysis.dataset).lean();
+
+  if (!dataset) throw httpError(404, "The dataset for this report was not found.");
+
+  // The report must belong to someone in the manager's institution.
+  const analysisOwnerField = findOwnerField(Analysis);
+  const datasetOwnerField = findOwnerField(Dataset);
+
+  if (!analysisOwnerField && !datasetOwnerField) {
+    throw httpError(
+      500,
+      "Could not find the owner field in your Dataset or Analysis model. Add its name to OWNER_FIELDS in utils/reportLoader.js.",
+    );
+  }
+
+  const owner = analysisOwnerField ? analysis[analysisOwnerField] : dataset[datasetOwnerField];
+  const ownerId = String(owner?._id || owner || "");
+
+  if (!ownerIds.some((id) => String(id) === ownerId)) {
+    throw httpError(404, "Report not found");
+  }
+
+  return { dataset, analysis };
+};
+
+module.exports = {
+  loadReport,
+  listCompletedAnalyses,
+  loadAnalysisById,
+  sendError,
+  httpError,
+};

@@ -54,6 +54,22 @@ const FIELD_ALIASES = {
     "examscore",
     "testscore",
   ],
+  annualFee: [
+    "annualfee",
+    "feeperyear",
+    "feesperyear",
+    "yearlyfee",
+    "yearlyfees",
+    "tuitionfee",
+    "tuitionfees",
+    "coursefee",
+  ],
+  remainingYears: [
+    "remainingyears",
+    "yearsleft",
+    "yearsremaining",
+    "remainingyearsofstudy",
+  ],
   previousMarks: [
     "previousmarks",
     "previousexammarks",
@@ -299,6 +315,8 @@ const buildStudents = (result, records) => {
           academicStatusFor(marks),
         indicators: getIndicators(merged),
         priority: getPriority(merged),
+        annualFee: getNumber(merged, FIELD_ALIASES.annualFee),
+        remainingYears: getNumber(merged, FIELD_ALIASES.remainingYears),
       };
     });
   }
@@ -324,6 +342,8 @@ const buildStudents = (result, records) => {
         academicStatus: academicStatusFor(marks),
         indicators: getIndicators(record),
         priority: getPriority(record),
+        annualFee: getNumber(record, FIELD_ALIASES.annualFee),
+        remainingYears: getNumber(record, FIELD_ALIASES.remainingYears),
       };
     })
     .filter((student) => student.indicators.length > 0);

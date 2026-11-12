@@ -20,6 +20,8 @@ const attendanceAnalysisRoutes = require("./routes/attendanceAnalysisRoutes");
 const teamRoutes = require("./routes/teamRoutes");
 const studentInsightRoutes = require("./routes/studentInsightRoutes");
 const behaviorInsightRoutes = require("./routes/behaviorInsightRoutes");
+const financialImpactRoutes = require("./routes/financialImpactRoutes");
+const analysisHistoryRoutes = require("./routes/analysisHistoryRoutes");
 
 // Used by the waiting page and the app to read the CURRENT role and status.
 // It must come before app.use("/api/auth", authRoutes).
@@ -38,7 +40,9 @@ app.use("/api/admin/analysis-config", analysisConfigurationRoutes);
 app.use("/api/team", teamRoutes);
 app.use("/api/student-insights", studentInsightRoutes);
 app.use("/api/attendance-analytics", attendanceAnalysisRoutes);
-app.use("/api/behaviorInsight", behaviorInsightRoutes);
+app.use("/api/behavior-insights", behaviorInsightRoutes);
+app.use("/api/financial-impact" , financialImpactRoutes);
+app.use("/api/analysis-history" , analysisHistoryRoutes)
 
 const PORT = process.env.PORT || 5000;
 
