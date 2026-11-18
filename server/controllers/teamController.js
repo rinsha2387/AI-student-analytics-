@@ -24,7 +24,10 @@ const listTeam = async (req, res) => {
     const members = everyone.filter((u) => !u.status || u.status === "active");
     const pending = everyone.filter((u) => u.status === "pending");
 
-    return res.status(200).json({ success: true, members, pending });
+    // The manager can switch join-request notifications off in Settings.
+    const notify = req.user.notificationSettings?.teamRequests !== false;
+
+    return res.status(200).json({ success: true, members, pending, notify });
   } catch (error) {
     console.error("List Team Error:", error);
     return res.status(500).json({ success: false, message: "Server error" });
@@ -32,7 +35,7 @@ const listTeam = async (req, res) => {
 };
 
 // PATCH /api/team/:id/role  (manager only)
-// Body:{body : manageronluy just text only}
+// Body: { role: "manager" | "sales" }
 const updateUserRole = async (req, res) => {
   try {
     const { role } = req.body;
@@ -138,4 +141,27 @@ const reviewRequest = async (req, res) => {
   }
 };
 
-module.exports = { listTeam, updateUserRole, reviewRequest };
+// GET /api/team/notifications  (manager only)
+// People from the same institution who are waiting for approval.
+// This list is built from the pending users, so a request disappears
+// from the bell as soon as the manager accepts or rejects it.
+const getNotifications = async (req, res) => {
+  try {
+    const filter = {
+      ...institutionFilter(req.user.institution),
+      status: "pending",
+    };
+
+    const [count, requests] = await Promise.all([
+      User.countDocuments(filter),
+      User.find(filter).select("name email createdAt").sort({ createdAt: -1 }).limit(10),
+    ]);
+
+    return res.status(200).json({ success: true, count, requests });
+  } catch (error) {
+    console.error("Notifications Error:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+module.exports = { listTeam, updateUserRole, reviewRequest, getNotifications };

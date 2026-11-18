@@ -9,8 +9,6 @@ export default function WaitingApproval() {
   const { user, token, loading, refreshUser, logout } = useAuth();
   const [checking, setChecking] = useState(false);
 
-  // Ask the server for the current status every 5 seconds
-  // and when the person comes back to this tab.
   useEffect(() => {
     if (!token) return;
 

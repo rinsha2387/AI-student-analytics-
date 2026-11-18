@@ -1,8 +1,6 @@
 const User = require("../models/User");
-const Student = require("../models/Student");
 const Dataset = require("../models/Dataset");
 const Analysis = require("../models/Analysis");
-const AuditLog = require("../models/AuditLog");
 
 const getAdminDashboard = async (req, res) => {
   try {
@@ -35,10 +33,14 @@ const getAdminDashboard = async (req, res) => {
       "error",
     ];
 
-    const [
+    const totalStudentsResult = await Dataset.aggregate([
+    { $group: { _id: null, total: { $sum: "$totalRows" } } },
+  ]);
+  const totalStudents = totalStudentsResult[0]?.total || 0;
+
+  const [
       managementUsers,
       activeManagementUsers,
-      totalStudents,
       uploadedDatasets,
       datasetsThisMonth,
       aiAnalyses,
@@ -54,8 +56,6 @@ const getAdminDashboard = async (req, res) => {
         ...managementRoleFilter,
         isActive: true,
       }),
-
-      Student.countDocuments(),
 
       Dataset.countDocuments(),
 
@@ -95,10 +95,7 @@ const getAdminDashboard = async (req, res) => {
         },
       ]),
 
-      AuditLog.find()
-        .sort({ createdAt: -1 })
-        .limit(5)
-        .lean(),
+      Promise.resolve([]),
 
       Analysis.find({
         status: { $in: completedStatuses },

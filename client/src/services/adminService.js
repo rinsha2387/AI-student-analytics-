@@ -23,27 +23,15 @@ async function getSection(path, token, options = {}) {
 }
 
 export const adminService = {
-  // Keep these existing dashboard methods.
-  getStats: (token) =>
-    getSection("/admin/dashboard/stats", token),
-
-  getUsage: (token) =>
-    getSection("/admin/dashboard/usage", token),
-
-  getHealth: (token) =>
-    getSection("/admin/dashboard/health", token),
-
-  getActivity: (token) =>
-    getSection("/admin/dashboard/activity", token),
+  getDashboard: (token) => getSection("/admin/dashboard", token),
 
   // Management Users page.
-  getUsers: (token) =>
-    getSection("/admin/users", token),
+  getUsers: (token) => getSection("/admin/users", token),
 
   updateUserStatus: (id, isActive, token) =>
     getSection(`/admin/users/${id}/status`, token, {
       method: "PATCH",
       body: JSON.stringify({ isActive }),
     }),
-};
+};;
 

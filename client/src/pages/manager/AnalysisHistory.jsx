@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -12,9 +13,9 @@ import {
 } from "lucide-react";
 
 const API_URL = "http://localhost:5000/api";
-const PAGE_SIZE = 5; // reports shown per page
+const PAGE_SIZE = 5;
 
-// 30 Sep 2026
+// Format date: 30 Sep 2026
 const formatDate = (value) => {
   if (!value) return "—";
 
@@ -34,6 +35,7 @@ export default function AnalysisHistory() {
 
   const [items, setItems] = useState([]);
   const [totalAnalyses, setTotalAnalyses] = useState(0);
+
   const [pagination, setPagination] = useState({
     page: 1,
     limit: PAGE_SIZE,
@@ -50,7 +52,7 @@ export default function AnalysisHistory() {
   const [searchText, setSearchText] = useState("");
   const [search, setSearch] = useState("");
 
-  // Wait a little after typing before searching.
+  // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearch(searchText.trim());
@@ -60,6 +62,7 @@ export default function AnalysisHistory() {
     return () => clearTimeout(timer);
   }, [searchText]);
 
+  // Fetch analysis history
   const loadHistory = useCallback(async () => {
     setRefreshing(true);
     setError("");
@@ -72,13 +75,21 @@ export default function AnalysisHistory() {
         search,
       });
 
-      const response = await fetch(`${API_URL}/analysis-history?${query.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `${API_URL}/analysis-history?${query.toString()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.message || "Could not load the analysis history.");
+        throw new Error(
+          data.message || "Could not load the analysis history."
+        );
       }
 
       setItems(data.items);
@@ -98,37 +109,50 @@ export default function AnalysisHistory() {
 
   const startIndex = (pagination.page - 1) * pagination.limit;
 
+  // Loading state
   if (loading) {
     return (
       <main className="flex min-h-[60vh] items-center justify-center">
         <div className="text-center">
-          <LoaderCircle className="mx-auto animate-spin text-indigo-600" size={34} />
-          <p className="mt-4 text-sm text-slate-500">Loading analysis history...</p>
+          <LoaderCircle
+            className="mx-auto animate-spin text-indigo-600"
+            size={30}
+          />
+          <p className="mt-3 text-sm text-slate-500">
+            Loading analysis history...
+          </p>
         </div>
       </main>
     );
   }
 
+  // Error state
   if (error && items.length === 0 && totalAnalyses === 0) {
     return (
-      <main className="min-h-[60vh] px-5 py-10 sm:px-8">
-        <div className="mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <AlertCircle className="mx-auto text-red-500" size={38} />
-          <h1 className="mt-4 text-xl font-semibold text-slate-900">Analysis history</h1>
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-500">{error}</p>
+      <main className="min-h-[60vh] px-5 py-8 sm:px-8">
+        <div className="mx-auto max-w-3xl rounded-xl border border-slate-200 bg-white p-7 text-center shadow-sm">
+          <AlertCircle className="mx-auto text-red-500" size={36} />
 
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <h1 className="mt-3 text-xl font-semibold text-slate-900">
+            Analysis history
+          </h1>
+
+          <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-500">
+            {error}
+          </p>
+
+          <div className="mt-5 flex flex-wrap justify-center gap-3">
             <button
               onClick={loadHistory}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-700"
+              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
             >
-              <RefreshCw size={16} />
+              <RefreshCw size={15} />
               Try again
             </button>
 
             <button
               onClick={() => navigate("/manager/upload-data")}
-              className="rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
             >
               Upload dataset
             </button>
@@ -139,55 +163,70 @@ export default function AnalysisHistory() {
   }
 
   return (
-    <main className="min-h-screen bg-[#fafafc] px-5 py-8 sm:px-8 lg:px-10">
+    <main className="min-h-screen bg-[#fafafc] px-5 py-6 sm:px-8 lg:px-10">
       <div className="mx-auto max-w-[1600px]">
-        {/* Heading */}
-        <div className="mb-8">
-          <p className="text-xs font-bold uppercase tracking-[0.15em] text-indigo-600">
+
+        {/* Page Heading */}
+        <div className="mb-7">
+          <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-indigo-600">
             Workspace
           </p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900">
+
+          <h1 className="mt-2 text-[34px] font-semibold leading-tight tracking-tight text-slate-900">
             Analysis history
           </h1>
-          <p className="mt-3 text-sm text-slate-500">
+
+          <p className="mt-2 text-sm text-slate-500">
             A record of previous analyses and their outcomes.
           </p>
         </div>
 
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          {/* Title and filters */}
-          <div className="px-7 pb-6 pt-7">
-            <h2 className="text-lg font-semibold text-slate-900">All analyses</h2>
-            <p className="mt-1 text-sm text-slate-500">
-              {totalAnalyses} completed {totalAnalyses === 1 ? "analysis" : "analyses"}
+        {/* Analysis History Card */}
+        <section className="overflow-hidden rounded-[14px] border border-slate-200 bg-white shadow-sm">
+
+          {/* Card Header */}
+          <div className="px-6 pb-5 pt-6">
+            <h2 className="text-base font-semibold text-slate-900">
+              All analyses
+            </h2>
+
+            <p className="mt-1 text-[13px] text-slate-500">
+              {totalAnalyses} completed{" "}
+              {totalAnalyses === 1 ? "analysis" : "analyses"}
             </p>
 
-            <div className="mt-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-              <div className="relative w-full sm:w-[340px]">
+            {/* Search and Sort */}
+            <div className="mt-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+
+              {/* Search */}
+              <div className="relative w-full sm:w-[272px]">
                 <Search
                   size={17}
                   className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
                 />
+
                 <input
                   value={searchText}
                   onChange={(event) => setSearchText(event.target.value)}
                   placeholder="Search by dataset, ID, or creator..."
-                  className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-3 text-sm outline-none placeholder:text-slate-400 focus:border-indigo-500"
+                  className="h-[44px] w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-[13px] outline-none placeholder:text-slate-400 focus:border-indigo-500"
                 />
               </div>
 
+              {/* Sort */}
               <div className="relative">
                 <Filter
                   size={17}
                   className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-600"
                 />
+
                 <select
                   value={sort}
                   onChange={(event) => {
                     setSort(event.target.value);
                     setPage(1);
                   }}
-                  className="cursor-pointer appearance-none rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-5 text-sm font-semibold text-slate-800 outline-none hover:bg-slate-50 focus:border-indigo-500"
+                  className="h-[44px] cursor-pointer appearance-none rounded-lg border border-slate-200 bg-white pl-11 pr-5 text-[13px] font-semibold text-slate-800 outline-none hover:bg-slate-50 focus:border-indigo-500"
                 >
                   <option value="newest">Newest first</option>
                   <option value="oldest">Oldest first</option>
@@ -196,84 +235,103 @@ export default function AnalysisHistory() {
             </div>
           </div>
 
+          {/* Error Message */}
           {error && (
-            <div className="mx-7 mb-4 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+            <div className="mx-6 mb-4 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
               {error}
             </div>
           )}
 
-          {/* Table */}
+          {/* Analysis Table */}
           <div className={`overflow-x-auto ${refreshing ? "opacity-60" : ""}`}>
             <table className="w-full min-w-[980px] border-collapse text-left">
+
+              {/* Table Header */}
               <thead>
-                <tr className="border-y border-slate-200 bg-slate-50/70 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="px-7 py-4">Analysis ID</th>
-                  <th className="px-4 py-4">Dataset</th>
-                  <th className="px-4 py-4">Date</th>
-                  <th className="px-4 py-4">Students</th>
-                  <th className="px-4 py-4">Review indicators</th>
-                  <th className="px-4 py-4">Status</th>
-                  <th className="px-4 py-4">Created by</th>
-                  <th className="px-7 py-4 text-right">Action</th>
+                <tr className="border-y border-slate-200 bg-slate-50/70 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="px-6 py-3.5">Analysis ID</th>
+                  <th className="px-3 py-3.5">Dataset</th>
+                  <th className="px-3 py-3.5">Date</th>
+                  <th className="px-3 py-3.5">Students</th>
+                  <th className="px-3 py-3.5">Review indicators</th>
+                  <th className="px-3 py-3.5">Status</th>
+                  <th className="px-3 py-3.5">Created by</th>
+                  <th className="px-6 py-3.5 text-right">Action</th>
                 </tr>
               </thead>
 
+              {/* Table Body */}
               <tbody>
                 {items.map((item) => (
                   <tr
                     key={item.analysisId}
                     className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60"
                   >
-                    <td className="px-7 py-5 font-mono text-[13px] text-slate-600">
+                    {/* Analysis ID */}
+                    <td className="px-6 py-[18px] font-mono text-[13px] text-slate-600">
                       {item.displayId}
                     </td>
 
-                    <td className="px-4 py-5">
+                    {/* Dataset */}
+                    <td className="px-3 py-[18px]">
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-500">
                           <FileText size={18} />
                         </div>
+
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-slate-900">
+                          <p className="truncate text-[13px] font-semibold text-slate-900">
                             {item.datasetName}
                           </p>
-                          {item.fileName && item.fileName !== item.datasetName && (
-                            <p className="mt-0.5 truncate text-xs text-slate-400">
-                              {item.fileName}
-                            </p>
-                          )}
+
+                          {item.fileName &&
+                            item.fileName !== item.datasetName && (
+                              <p className="mt-0.5 truncate text-xs text-slate-400">
+                                {item.fileName}
+                              </p>
+                            )}
                         </div>
                       </div>
                     </td>
 
-                    <td className="px-4 py-5 text-sm text-slate-600">
+                    {/* Date */}
+                    <td className="px-3 py-[18px] text-[13px] text-slate-600">
                       {formatDate(item.date)}
                     </td>
 
-                    <td className="px-4 py-5 text-sm text-slate-600">
+                    {/* Students */}
+                    <td className="px-3 py-[18px] text-[13px] text-slate-600">
                       {new Intl.NumberFormat("en-IN").format(item.students)}
                     </td>
 
-                    <td className="px-4 py-5 text-sm text-slate-600">
+                    {/* Review Indicators */}
+                    <td className="px-3 py-[18px] text-[13px] text-slate-600">
                       {item.reviewCount ?? "—"}
                     </td>
 
-                    <td className="px-4 py-5">
-                      <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-600">
+                    {/* Status */}
+                    <td className="px-3 py-[18px]">
+                      <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
                         <span className="h-1.5 w-1.5 rounded-full bg-current" />
                         Completed
                       </span>
                     </td>
 
-                    <td className="px-4 py-5 text-sm text-slate-600">{item.createdBy}</td>
+                    {/* Created By */}
+                    <td className="px-3 py-[18px] text-[13px] text-slate-600">
+                      {item.createdBy}
+                    </td>
 
-                    <td className="px-7 py-5 text-right">
+                    {/* View Report */}
+                    <td className="px-6 py-[18px] text-right">
                       <button
                         type="button"
                         onClick={() =>
-                          navigate(`/manager/analysis-history/${item.analysisId}`)
+                          navigate(
+                            `/manager/analysis-history/${item.analysisId}`
+                          )
                         }
-                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-800"
+                        className="inline-flex items-center gap-1.5 whitespace-nowrap text-[13px] font-semibold text-indigo-600 hover:text-indigo-800"
                       >
                         View report
                         <ArrowRight size={15} />
@@ -282,13 +340,17 @@ export default function AnalysisHistory() {
                   </tr>
                 ))}
 
+                {/* Empty State */}
                 {items.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="px-7 py-14 text-center">
-                      <p className="font-semibold text-slate-700">
-                        {search ? "No analyses match your search" : "No analyses yet"}
+                    <td colSpan={8} className="px-6 py-12 text-center">
+                      <p className="text-sm font-semibold text-slate-700">
+                        {search
+                          ? "No analyses match your search"
+                          : "No analyses yet"}
                       </p>
-                      <p className="mt-1 text-sm text-slate-500">
+
+                      <p className="mt-1 text-[13px] text-slate-500">
                         {search
                           ? "Try a different dataset name, ID or creator."
                           : "Upload a dataset and run AI analysis to see it here."}
@@ -302,34 +364,45 @@ export default function AnalysisHistory() {
 
           {/* Pagination */}
           {pagination.total > 0 && (
-            <div className="flex flex-col gap-3 border-t border-slate-200 px-7 py-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-slate-500">
+            <div className="flex flex-col gap-3 border-t border-slate-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+
+              <p className="text-[13px] text-slate-500">
                 Showing {startIndex + 1}–
-                {Math.min(startIndex + pagination.limit, pagination.total)} of{" "}
-                {pagination.total} analyses
+                {Math.min(
+                  startIndex + pagination.limit,
+                  pagination.total
+                )}{" "}
+                of {pagination.total} analyses
               </p>
 
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setPage((value) => Math.max(value - 1, 1))}
+                  onClick={() =>
+                    setPage((value) => Math.max(value - 1, 1))
+                  }
                   disabled={pagination.page <= 1 || refreshing}
-                  className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="rounded-lg border border-slate-200 px-3.5 py-2 text-[13px] font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Previous
                 </button>
 
-                <span className="text-sm text-slate-600">
+                <span className="px-1 text-[13px] text-slate-600">
                   Page {pagination.page} of {pagination.totalPages}
                 </span>
 
                 <button
                   type="button"
                   onClick={() =>
-                    setPage((value) => Math.min(value + 1, pagination.totalPages))
+                    setPage((value) =>
+                      Math.min(value + 1, pagination.totalPages)
+                    )
                   }
-                  disabled={pagination.page >= pagination.totalPages || refreshing}
-                  className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  disabled={
+                    pagination.page >= pagination.totalPages ||
+                    refreshing
+                  }
+                  className="rounded-lg border border-slate-200 px-3.5 py-2 text-[13px] font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Next
                 </button>
@@ -339,10 +412,11 @@ export default function AnalysisHistory() {
         </section>
 
         {/* Footer */}
-        <div className="mt-10 flex flex-col justify-between gap-2 border-t border-slate-200 pt-5 text-xs text-slate-400 sm:flex-row">
+        <div className="mt-7 flex flex-col justify-between gap-2 border-t border-slate-200 pt-4 text-[11px] text-slate-400 sm:flex-row">
           <span>© 2026 AI Student Analytics</span>
           <span>Insights support human judgment</span>
         </div>
+
       </div>
     </main>
   );

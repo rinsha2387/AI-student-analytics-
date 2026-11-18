@@ -225,10 +225,50 @@ const loadAnalysisById = async (req, analysisId) => {
   return { dataset, analysis };
 };
 
+
+// The newest dataset uploaded by the institution's managers.
+// Used by the sales pages, which only need the uploaded fee data
+// (they do not need an AI analysis to exist).
+const loadLatestDataset = async (req) => {
+  const ownerIds = await getInstitutionUserIds(req.user);
+
+  const datasetOwnerField = findOwnerField(Dataset);
+  const analysisOwnerField = findOwnerField(Analysis);
+
+  let dataset = null;
+
+  if (datasetOwnerField) {
+    dataset = await Dataset.findOne({ [datasetOwnerField]: { $in: ownerIds } })
+      .sort({ createdAt: -1, _id: -1 })
+      .lean();
+  } else if (analysisOwnerField) {
+    const latest = await Analysis.findOne({ [analysisOwnerField]: { $in: ownerIds } })
+      .sort({ createdAt: -1, _id: -1 })
+      .select("dataset")
+      .lean();
+
+    if (latest) {
+      dataset = await Dataset.findById(latest.dataset?._id || latest.dataset).lean();
+    }
+  } else {
+    throw httpError(
+      500,
+      "Could not find the owner field in your Dataset or Analysis model. Add its name to OWNER_FIELDS in utils/reportLoader.js.",
+    );
+  }
+
+  if (!dataset) {
+    throw httpError(404, "No dataset has been uploaded yet. Ask your manager to upload one.");
+  }
+
+  return { dataset };
+};
+
 module.exports = {
   loadReport,
   listCompletedAnalyses,
   loadAnalysisById,
+  loadLatestDataset,
   sendError,
   httpError,
 };

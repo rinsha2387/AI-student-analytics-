@@ -17,10 +17,14 @@ import BehaviorInsights from "./pages/manager/BehaviorInsight";
 import FinancialImpact from "./pages/manager/financialImpact";
 import AnalysisHistory from "./pages/manager/AnalysisHistory";
 import AnalysisReport from "./pages/manager/AnalysisReport";
+import Settings from "./pages/manager/Settings";
 import TeamManagement from "./pages/manager/TeamManagment";
 import RoleRoute from "./components/RoleRoute";
 import SalesLayout from "./components/sales/SalesLayout";
 import SalesDashboard from "./pages/sales/SalesDashboard";
+import SalesFinancialImpact from "./pages/sales/SalesFinancialImpact";
+import FeesDue from "./pages/sales/FeesDue";
+import FeesPaid from "./pages/sales/FeesPaid";
 
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -81,6 +85,7 @@ function App() {
             <Route path="financial-impact/:datasetId" element={<FinancialImpact />} />
             <Route path="analysis-history" element={<AnalysisHistory />} />
             <Route path="analysis-history/:analysisId" element={<AnalysisReport />} />
+            <Route path="settings" element={<Settings />} />
             <Route path="reports" element={<Navigate to="/manager/analysis-history" replace />} />
             <Route path="team" element={<TeamManagement />} />
           </Route>
@@ -96,10 +101,9 @@ function App() {
           >
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<SalesDashboard />} />
-            {/* Replace these with your own sales pages when they are ready */}
-            <Route path="financial-impact" element={<SalesDashboard />} />
-            <Route path="fees-due" element={<SalesDashboard />} />
-            <Route path="fees-paid" element={<SalesDashboard />} />
+            <Route path="financial-impact" element={<SalesFinancialImpact />} />
+            <Route path="fees-due" element={<FeesDue />} />
+            <Route path="fees-paid" element={<FeesPaid />} />
           </Route>
 
           {/* Admin routes */}
