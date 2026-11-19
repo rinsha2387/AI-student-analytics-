@@ -49,6 +49,15 @@ const userSchema = new mongoose.Schema(
       },
     },
 
+    notificationPreferences: {
+      analysisFailures: { type: Boolean, default: true },
+      newUserRequests: { type: Boolean, default: true },
+      weeklySummary: { type: Boolean, default: false },
+      systemAlerts: { type: Boolean, default: true },
+      analysisCompleted: { type: Boolean, default: true },
+      reportReady: { type: Boolean, default: true },
+    },
+
     isActive: {
       type: Boolean,
       default: true,

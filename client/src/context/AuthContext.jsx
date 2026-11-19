@@ -46,12 +46,19 @@ export const AuthProvider = ({ children }) => {
 
   // Logout
   const logout = useCallback(() => {
+    if (token) {
+      fetch(`${API_URL}/auth/logout`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => {});
+    }
+
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
     setToken(null);
     setUser(null);
-  }, []);
+  }, [token]);
 
   // Ask the server for the CURRENT role and status.
   // This moves a person to the right side after the manager accepts them

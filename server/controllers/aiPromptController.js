@@ -1,4 +1,5 @@
 const AIPrompt = require("../models/AIPrompt");
+const { logAudit } = require("../utils/auditLog");
 
 const DEFAULT_PROMPT = `
 You are an AI assistant for student analytics.
@@ -121,6 +122,14 @@ async function savePrompt(req, res) {
         updatedBy: req.user?._id,
       });
     }
+
+    logAudit(req, {
+      activity: "Prompt modified",
+      resource: prompt?.name || "AI prompt",
+      category: "settings",
+      status: "success",
+      success: true,
+    });
 
     return res.json({
       success: true,

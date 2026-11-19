@@ -4,6 +4,7 @@ const path = require("path");
 const Dataset = require("../models/Dataset");
 const AnalysisConfig = require("../models/analysisConfig");
 const { parseDataset } = require("../services/file/datasetParser");
+const { logAudit } = require("../utils/auditLog");
 
 const DEFAULTS = {
   maxFileSizeMB: 25,
@@ -288,6 +289,14 @@ const uploadDataset = async (req, res) => {
       records,
       status: "validated",
       validationErrors: [],
+    });
+
+    logAudit(req, {
+      activity: "File uploaded",
+      resource: req.file?.originalname || dataset.originalFileName,
+      category: "data",
+      status: "success",
+      success: true,
     });
 
     return res.status(201).json({

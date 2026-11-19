@@ -28,10 +28,39 @@ export const adminService = {
   // Management Users page.
   getUsers: (token) => getSection("/admin/users", token),
 
+  getAnalysisHistory: (params, token) => {
+    const query = new URLSearchParams();
+    Object.entries(params || {}).forEach(([key, value]) => {
+      if (value !== "" && value != null) query.set(key, value);
+    });
+    return getSection(`/admin/analysis-history?${query.toString()}`, token);
+  },
+
+  getSystemLogs: (params, token) => {
+    const query = new URLSearchParams();
+    Object.entries(params || {}).forEach(([key, value]) => {
+      if (value !== "" && value != null) query.set(key, value);
+    });
+    return getSection(`/admin/system-logs?${query.toString()}`, token);
+  },
+
+  getSettings: (token) => getSection("/admin/settings", token),
+
+  updateProfile: (name, token) =>
+    getSection("/admin/settings/profile", token, {
+      method: "PATCH",
+      body: JSON.stringify({ name }),
+    }),
+
+  updateNotifications: (notifications, token) =>
+    getSection("/admin/settings/notifications", token, {
+      method: "PATCH",
+      body: JSON.stringify({ notifications }),
+    }),
+
   updateUserStatus: (id, isActive, token) =>
     getSection(`/admin/users/${id}/status`, token, {
       method: "PATCH",
       body: JSON.stringify({ isActive }),
     }),
-};;
-
+};

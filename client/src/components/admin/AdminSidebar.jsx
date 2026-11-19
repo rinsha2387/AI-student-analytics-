@@ -12,7 +12,6 @@ const AdminSidebar = ({
       items: [
         { name: "Dashboard", icon: "dashboard" },
         { name: "Management Users", icon: "students" },
-        { name: "Student Data", icon: "reports" },
       ],
     },
     {
@@ -21,13 +20,11 @@ const AdminSidebar = ({
         { name: "AI Prompts", icon: "ai" },
         { name: "AI Configuration", icon: "settings" },
         { name: "Analysis Configuration", icon: "configuration" },
-        { name: "Processing Monitor", icon: "activity" },
       ],
     },
     {
       title: "SYSTEM",
       items: [
-        { name: "Reports", icon: "reports" },
         { name: "Analysis History", icon: "history" },
         { name: "System Logs", icon: "logs" },
         { name: "Settings", icon: "settings" },

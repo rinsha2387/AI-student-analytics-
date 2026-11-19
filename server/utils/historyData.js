@@ -34,7 +34,7 @@ const buildHistoryItems = ({
       datasetName: dataset?.name || dataset?.originalFileName || "Dataset",
       fileName: dataset?.originalFileName || "",
       date,
-      students: dataset?.studentCount ?? 0,
+      students: dataset?.totalRows ?? dataset?.studentCount ?? 0,
       status: "completed",
       createdBy: creatorById.get(asId(ownerRef)) || "Unknown",
       sortTime: new Date(analysis.createdAt || date || 0).getTime(),

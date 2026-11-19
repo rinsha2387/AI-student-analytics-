@@ -20,10 +20,8 @@ const ManagerSidebar = ({
     {
       title: "ANALYTICS",
       items: [
-        { name: "High-Risk Students", icon: "risk", badge: "87" },
         { name: "Student Insights", icon: "students" },
         { name: "Behavior Insights", icon: "behavior" },
-        { name: "Academic Analytics", icon: "academic" },
         { name: "Attendance Analytics", icon: "attendance" },
         { name: "Financial Impact", icon: "financial" },
       ],
@@ -31,7 +29,6 @@ const ManagerSidebar = ({
     {
       title: "WORKSPACE",
       items: [
-        { name: "Reports", icon: "reports" },
         { name: "Analysis History", icon: "history" },
         { name: "Settings", icon: "settings" },
       ],

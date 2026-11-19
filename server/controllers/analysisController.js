@@ -3,6 +3,7 @@ const { GoogleGenAI } = require("@google/genai");
 const Dataset = require("../models/Dataset");
 const AIPrompt = require("../models/AIPrompt");
 const Analysis = require("../models/Analysis");
+const { logAudit } = require("../utils/auditLog");
 
 const getGemini = () => {
   if (!process.env.GEMINI_API_KEY) {
@@ -185,7 +186,7 @@ async function getManagerDashboard(req, res) {
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function generateWithRetry(ai, request, maxRetries = 3) {
+async function generateWithRetry(ai, request, maxRetries = 5) {
   for (let attempt = 0; ; attempt++) {
     try {
       return await ai.models.generateContent(request);
@@ -203,10 +204,15 @@ async function generateWithRetry(ai, request, maxRetries = 3) {
         );
 
       if (!isTemporary || attempt >= maxRetries) {
+        if (isTemporary) {
+          throw new Error(
+            "The AI service is temporarily busy. Please try again in a few minutes.",
+          );
+        }
         throw error;
       }
 
-      const delay = Math.min(1000 * 2 ** attempt + Math.random() * 1000, 10000);
+      const delay = Math.min(1000 * 2 ** attempt + Math.random() * 1000, 30000);
 
       console.log(
         `Gemini temporarily unavailable. Retry ${attempt + 1}/${maxRetries} in ${Math.round(delay)} ms.`,
@@ -392,6 +398,14 @@ async function runAnalysis(req, res) {
 
     await analysis.save();
 
+    logAudit(req, {
+      activity: "AI analysis completed",
+      resource: dataset.name || dataset.originalFileName,
+      category: "analysis",
+      status: "success",
+      success: true,
+    });
+
     return res.status(200).json({
       success: true,
       message: "Student analysis completed successfully.",
@@ -409,6 +423,14 @@ async function runAnalysis(req, res) {
         console.error("Could not save analysis failure:", saveError.message);
       });
     }
+
+    logAudit(req, {
+      activity: "AI analysis failed",
+      resource: req.params?.datasetId || "Dataset",
+      category: "analysis",
+      status: "failed",
+      success: false,
+    });
 
     const status = error.message?.includes("GEMINI_API_KEY") ? 500 : 500;
 

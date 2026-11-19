@@ -4,6 +4,7 @@
 const express = require("express");
 const router = express.Router();
 const protect = require("../middleware/authMiddleware");
+const { logAudit } = require("../utils/auditLog");
 
 const NOTIFICATION_KEYS = ["email", "analysis", "teamRequests"];
 
@@ -69,6 +70,14 @@ const updateProfile = async (req, res) => {
     req.user.name = name;
     await req.user.save();
 
+    logAudit(req, {
+      activity: "Profile updated",
+      resource: "Admin settings",
+      category: "settings",
+      status: "success",
+      success: true,
+    });
+
     return res.status(200).json({
       success: true,
       message: "Profile saved",
@@ -100,6 +109,14 @@ const updateNotifications = async (req, res) => {
 
     req.user.notificationSettings = next;
     await req.user.save();
+
+    logAudit(req, {
+      activity: "Notification settings changed",
+      resource: "Admin settings",
+      category: "settings",
+      status: "success",
+      success: true,
+    });
 
     return res.status(200).json({
       success: true,

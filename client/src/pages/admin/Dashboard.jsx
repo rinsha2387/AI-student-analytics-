@@ -314,10 +314,10 @@ function SystemHealth({ health, loading, error }) {
           ))}
 
           <Link
-            to="/admin/processing-monitor"
+            to="/admin/system-logs"
             className="flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
           >
-            Open processing monitor <ArrowRight size={14} />
+            See System logs <ArrowRight size={14} />
           </Link>
         </div>
       )}
@@ -527,7 +527,7 @@ export default function Dashboard() {
         onLogout={logout}
       />
 
-      <div className="min-h-screen md:ml-[260px]">
+      <div className="min-h-screen lg:ml-[288px]">
         <AdminTopbar user={user} activeMenu={activeMenu} />
 
         <main className="space-y-6 p-5 md:p-8">

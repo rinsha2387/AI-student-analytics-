@@ -1,8 +1,8 @@
-
 const User = require("../models/User");
 const OTP = require("../models/OTP");
 const jwt = require("jsonwebtoken");
 const { sendOtpEmail } = require("../services/emailService");
+const { logAudit } = require("../utils/auditLog");
 
 const generateToken = (user) => {
   return jwt.sign(
@@ -199,6 +199,13 @@ const verifyRegisterOTP = async (req, res) => {
       _id: otpRecord._id,
     });
 
+    logAudit({ user }, {
+      activity: "User registered",
+      resource: user.institution?.name || "Institution",
+      status: "success",
+      success: true,
+    });
+
     // Generate JWT
     const token = generateToken(user);
 
@@ -289,6 +296,13 @@ const sendLoginOTP = async (req, res) => {
       expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
 
+    logAudit({ user }, {
+      activity: "Login code requested",
+      resource: "Email login",
+      category: "auth",
+      user,
+    });
+
     // Send OTP to the user's email
     try {
       await sendOtpEmail(normalizedEmail, otp, "login");
@@ -342,6 +356,18 @@ const verifyLoginOTP = async (req, res) => {
     });
 
     if (!otpRecord) {
+      const existingUser = await User.findOne({ email: normalizedEmail });
+
+      logAudit({ user: existingUser }, {
+        activity: "Login failed",
+        resource: "Invalid or expired code",
+        category: "auth",
+        status: "failed",
+        success: false,
+        user: existingUser,
+        email: normalizedEmail,
+      });
+
       return res.status(400).json({
         success: false,
         message: "Invalid OTP",
@@ -350,6 +376,18 @@ const verifyLoginOTP = async (req, res) => {
 
     // Check expiration
     if (otpRecord.expiresAt < new Date()) {
+      const existingUser = await User.findOne({ email: normalizedEmail });
+
+      logAudit({ user: existingUser }, {
+        activity: "Login failed",
+        resource: "Invalid or expired code",
+        category: "auth",
+        status: "failed",
+        success: false,
+        user: existingUser,
+        email: normalizedEmail,
+      });
+
       await OTP.deleteOne({
         _id: otpRecord._id,
       });
@@ -393,6 +431,13 @@ const verifyLoginOTP = async (req, res) => {
     // Delete used OTP
     await OTP.deleteOne({
       _id: otpRecord._id,
+    });
+
+    logAudit({ user }, {
+      activity: "User logged in",
+      resource: user.institution?.name || "Institution",
+      status: "success",
+      success: true,
     });
 
     // Generate JWT
@@ -458,10 +503,33 @@ const getMe = async (req, res) => {
   }
 };
 
+const logout = async (req, res) => {
+  try {
+    logAudit(req, {
+      activity: "User logged out",
+      resource: req.user?.institution?.name || "Institution",
+      status: "success",
+      success: true,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    console.error("Logout Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
 module.exports = {
   sendRegisterOTP,
   verifyRegisterOTP,
   sendLoginOTP,
   verifyLoginOTP,
   getMe,
+  logout,
 };

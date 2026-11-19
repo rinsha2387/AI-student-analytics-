@@ -23,13 +23,10 @@ const ManagerLayout = () => {
     Dashboard: "/manager/dashboard",
     "Upload Data": "/manager/upload-data",
     "AI Analysis": "/manager/ai-analysis",
-    "High-Risk Students": "/manager/high-risk-students",
     "Student Insights": "/manager/student-insights",
     "Behavior Insights": "/manager/behavior-insights",
-    "Academic Analytics": "/manager/academic-analytics",
     "Attendance Analytics": "/manager/attendance-analytics",
     "Financial Impact": "/manager/financial-impact",
-    Reports: "/manager/reports",
     "Analysis History": "/manager/analysis-history",
     Settings: "/manager/settings",
   };

@@ -1,4 +1,5 @@
 const AnalysisConfig = require("../models/analysisConfig");
+const { logAudit } = require("../utils/auditLog");
 
 const DEFAULTS = {
   maxFileSizeMB: 25,
@@ -158,6 +159,14 @@ const saveConfig = async (req, res) => {
     }
 
     await config.save();
+
+    logAudit(req, {
+      activity: "Configuration updated",
+      resource: "Analysis configuration",
+      category: "settings",
+      status: "success",
+      success: true,
+    });
 
     return res.json({
       success: true,

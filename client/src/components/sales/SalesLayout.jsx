@@ -4,6 +4,7 @@ import {
   Banknote,
   Receipt,
   Wallet,
+  Settings,
   LogOut,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
@@ -13,6 +14,7 @@ const NAV_ITEMS = [
   { to: "/sales/financial-impact", label: "Financial Impact", icon: Banknote },
   { to: "/sales/fees-due", label: "Fees Due", icon: Receipt },
   { to: "/sales/fees-paid", label: "Fees Paid", icon: Wallet },
+  { to: "/sales/settings", label: "Settings", icon: Settings },
 ];
 
 export default function SalesLayout() {

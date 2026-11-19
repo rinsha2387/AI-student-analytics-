@@ -1,4 +1,5 @@
 const AIConfig = require("../models/AIConfig");
+const { logAudit } = require("../utils/auditLog");
 
 const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
 const FORMATS = ["json", "text"];
@@ -144,6 +145,14 @@ async function saveConfig(req, res) {
     config.updatedBy = req.user?._id;
 
     await config.save();
+
+    logAudit(req, {
+      activity: "Configuration updated",
+      resource: "AI configuration",
+      category: "settings",
+      status: "success",
+      success: true,
+    });
 
     return res.json({
       success: true,
