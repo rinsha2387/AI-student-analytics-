@@ -29,6 +29,7 @@ const ManagerLayout = () => {
     "Financial Impact": "/manager/financial-impact",
     "Analysis History": "/manager/analysis-history",
     Settings: "/manager/settings",
+    Team: "/manager/team",
   };
 
   const activeMenu =

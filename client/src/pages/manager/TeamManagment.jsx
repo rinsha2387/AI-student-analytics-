@@ -175,15 +175,6 @@ export default function TeamManagement() {
                       <button
                         type="button"
                         disabled={busyId === person._id}
-                        onClick={() => reviewRequest(person, "approve", "manager")}
-                        className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-                      >
-                        Approve as Manager
-                      </button>
-
-                      <button
-                        type="button"
-                        disabled={busyId === person._id}
                         onClick={() => reviewRequest(person, "reject")}
                         className="rounded-lg px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
                       >
@@ -224,16 +215,8 @@ export default function TeamManagement() {
                       <td className="px-7 py-4 text-sm text-slate-600">
                         {member.email}
                       </td>
-                      <td className="px-7 py-4">
-                        <select
-                          value={member.role}
-                          disabled={busyId === member._id}
-                          onChange={(event) => changeRole(member, event.target.value)}
-                          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 disabled:opacity-50"
-                        >
-                          <option value="manager">Manager</option>
-                          <option value="sales">Sales team</option>
-                        </select>
+                      <td className="px-7 py-4 text-sm text-slate-600">
+                        {member.role === "manager" ? "Manager" : "Sales team"}
                       </td>
                     </tr>
                   ))}

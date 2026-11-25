@@ -428,6 +428,14 @@ const verifyLoginOTP = async (req, res) => {
       });
     }
 
+    // Record the login time
+    user.lastLogin = new Date();
+    await user.save();
+
+    // Record this login time
+    user.lastLogin = new Date();
+    await user.save();
+
     // Delete used OTP
     await OTP.deleteOne({
       _id: otpRecord._id,

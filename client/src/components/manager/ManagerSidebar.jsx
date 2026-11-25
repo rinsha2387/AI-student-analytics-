@@ -148,8 +148,10 @@ const ManagerSidebar = ({
       case "settings":
         return (
           <svg {...common}>
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1-1.8 1.8-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V20h-2.5v-.1a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.9.3l-.1.1-1.8-1.8.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H6v-2.5h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1L9 6.7l.1.1a1.7 1.7 0 001.9.3 1.7 1.7 0 001-1.5V5h2.5v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1 1.8 1.8-.1.1a1.7 1.7 0 00.3 1.9 1.7 1.7 0 001.5 1h.1v2.5h-.1a1.7 1.7 0 00-1.5 1z" />
+            <path d="M4 6h16M4 12h16M4 18h16" />
+            <circle cx="9" cy="6" r="2" fill="white" />
+            <circle cx="15" cy="12" r="2" fill="white" />
+            <circle cx="8" cy="18" r="2" fill="white" />
           </svg>
         );
 
@@ -194,7 +196,11 @@ const ManagerSidebar = ({
 
       {/* Institution */}
       <div className="px-5">
-        <div className="flex w-full items-center justify-between rounded-xl border border-[#e5e8ef] bg-white px-3 py-3 text-left shadow-sm">
+        <button
+          type="button"
+          onClick={() => onMenuClick({ name: "Team" })}
+          className="flex w-full items-center justify-between rounded-xl border border-[#e5e8ef] bg-white px-3 py-3 text-left shadow-sm transition hover:border-[#5268d8] hover:bg-[#f6f7fb]"
+        >
           <div className="flex min-w-0 items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#eef1ff] text-lg font-semibold text-[#5268d8]">
               {institutionName.charAt(0).toUpperCase()}
@@ -209,12 +215,11 @@ const ManagerSidebar = ({
               </p>
             </div>
           </div>
-
-        </div>
+        </button>
       </div>
 
       {/* Navigation — help card removed */}
-      <nav className="mt-7 h-[calc(100vh-205px)] overflow-y-auto px-4 pb-4">
+      <nav className="mt-7 h-[calc(100vh-250px)] overflow-y-auto px-4 pb-4">
         {menuGroups.map((group) => (
           <div key={group.title} className="mb-7">
             <p className="mb-3 px-3 text-[10px] font-semibold tracking-[1.4px] text-[#94a0b4]">
@@ -269,14 +274,7 @@ const ManagerSidebar = ({
             <p className="text-[11px] text-[#8b99ae]">Management</p>
           </div>
 
-          <button
-            onClick={onLogout}
-            title="Logout"
-            aria-label="Logout"
-            className="text-[#8d9bb0] hover:text-red-500"
-          >
-            •••
-          </button>
+          
         </div>
       </div>
     </aside>

@@ -55,6 +55,15 @@ const AdminSidebar = ({
           </svg>
         );
 
+      case "academic":
+        return (
+          <svg {...common}>
+            <path d="M3 10l9-5 9 5-9 5-9-5z" />
+            <path d="M7 12.5V17c2.7 2 7.3 2 10 0v-4.5" />
+            <path d="M21 10v6" />
+          </svg>
+        );
+
       case "students":
         return (
           <svg {...common}>
@@ -199,15 +208,7 @@ const AdminSidebar = ({
             <p className="text-[11px] text-[#8b99ae]">Administrator</p>
           </div>
 
-          <button
-            type="button"
-            onClick={onLogout}
-            title="Logout"
-            aria-label="Logout"
-            className="text-[#8d9bb0] hover:text-red-500"
-          >
-            •••
-          </button>
+          
         </div>
       </div>
     </aside>

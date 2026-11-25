@@ -244,12 +244,17 @@ const ManagerDashboard = () => {
 
   /* ---------------- Data ---------------- */
   const stats = dashboardData?.stats || {};
+
+  const totalStudents =
+    dashboardData?.latestAnalysis?.dataset?.totalRows ??
+    stats.totalStudents ??
+    0;
   const latestResult = dashboardData?.latestAnalysis?.result || null;
 
   const statistics = [
     {
       title: "Total students",
-      value: stats.totalStudents?.toLocaleString("en-IN") ?? "0",
+      value: totalStudents?.toLocaleString("en-IN") ?? "0",
       description: "Across all uploaded datasets",
       icon: "students",
       color: "blue",

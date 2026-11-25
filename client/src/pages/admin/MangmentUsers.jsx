@@ -200,9 +200,9 @@ export default function ManagementUsers() {
 
             <StatCard
               icon="✓"
-              value={stats ? formatNumber(stats.activeUsers) : "—"}
-              title="Active users"
-              subtitle="Currently enabled"
+              value={formatNumber(users.filter((item) => item.role === "sales").length)}
+              title="Sales users"
+              subtitle="Sales team accounts"
               color="bg-emerald-50 text-emerald-600"
             />
 

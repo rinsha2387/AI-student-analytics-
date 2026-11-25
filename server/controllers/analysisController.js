@@ -187,41 +187,221 @@ async function getManagerDashboard(req, res) {
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function generateWithRetry(ai, request, maxRetries = 5) {
-  for (let attempt = 0; ; attempt++) {
-    try {
-      return await ai.models.generateContent(request);
-    } catch (error) {
-      const message = String(error?.message || error);
+  const models = [request.model, process.env.GEMINI_FALLBACK_MODEL].filter(Boolean);
+  let lastError = null;
 
-      const isTemporary =
-        /\b503\b/.test(message) ||
-        /\b429\b/.test(message) ||
-        /\b500\b/.test(message) ||
-        /\b502\b/.test(message) ||
-        /\b504\b/.test(message) ||
-        /UNAVAILABLE|RESOURCE_EXHAUSTED|INTERNAL|DEADLINE_EXCEEDED/i.test(
-          message,
-        );
+  for (const model of models) {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        return await ai.models.generateContent({ ...request, model });
+      } catch (error) {
+        const message = String(error?.message || error);
 
-      if (!isTemporary || attempt >= maxRetries) {
-        if (isTemporary) {
-          throw new Error(
+        const isTemporary =
+          /\b503\b/.test(message) ||
+          /\b429\b/.test(message) ||
+          /\b500\b/.test(message) ||
+          /\b502\b/.test(message) ||
+          /\b504\b/.test(message) ||
+          /UNAVAILABLE|RESOURCE_EXHAUSTED|INTERNAL|DEADLINE_EXCEEDED/i.test(
+            message,
+          );
+
+        if (!isTemporary) {
+          throw error;
+        }
+
+        if (attempt >= maxRetries) {
+          lastError = new Error(
             "The AI service is temporarily busy. Please try again in a few minutes.",
           );
+          break;
         }
-        throw error;
+
+        const delay = Math.min(1000 * 2 ** attempt + Math.random() * 1000, 30000);
+
+        console.log(
+          `Gemini temporarily unavailable on ${model}. Retry ${attempt + 1}/${maxRetries} in ${Math.round(delay)} ms.`,
+        );
+
+        await sleep(delay);
       }
-
-      const delay = Math.min(1000 * 2 ** attempt + Math.random() * 1000, 30000);
-
-      console.log(
-        `Gemini temporarily unavailable. Retry ${attempt + 1}/${maxRetries} in ${Math.round(delay)} ms.`,
-      );
-
-      await sleep(delay);
     }
   }
+
+  throw lastError || new Error("The AI service is temporarily busy. Please try again in a few minutes.");
 }
+
+
+// GET /api/analysis/dashboard
+async function getManagerDashboard(req, res) {
+  try {
+    const managerId = req.user?._id || req.user?.id;
+
+    if (!managerId) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required.",
+      });
+    }
+
+    // Fetch only datasets belonging to this manager.
+    const datasets = await Dataset.find({
+      uploadedBy: managerId,
+    })
+      .select(
+        "name originalFileName totalRows columns status createdAt records",
+      )
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Fetch previously saved analyses. Do not call Gemini here.
+    const analyses = await Analysis.find({
+      manager: managerId,
+    })
+      .populate("dataset", "name originalFileName totalRows")
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .lean();
+
+    const completedAnalyses = analyses.filter(
+      (analysis) => analysis.status === "completed",
+    );
+
+    const totalStudents = datasets.reduce((total, dataset) => {
+      return total + (dataset.totalRows || dataset.records?.length || 0);
+    }, 0);
+
+    // Normalize column names to support variations such as
+    // exam_marks, Exam Marks, and examMarks.
+    const normalizeKey = (key) =>
+      String(key)
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
+
+    const getNumericValue = (record, acceptedKeys) => {
+      const key = Object.keys(record || {}).find((field) =>
+        acceptedKeys.includes(normalizeKey(field)),
+      );
+
+      if (key === undefined || record[key] === "" || record[key] == null) {
+        return null;
+      }
+
+      const value = Number(record[key]);
+
+      return Number.isFinite(value) ? value : null;
+    };
+
+    const allRecords = datasets.flatMap((dataset) =>
+      Array.isArray(dataset.records) ? dataset.records : [],
+    );
+
+    const attendanceValues = allRecords
+      .map((record) =>
+        getNumericValue(record, [
+          "attendance",
+          "attendancepercentage",
+          "attendancepercent",
+          "attendancepct",
+          "attendancerate",
+          "presentpercentage",
+        ]),
+      )
+      .filter((value) => value !== null);
+
+    const markValues = allRecords
+      .map((record) =>
+        getNumericValue(record, [
+          "marks",
+          "exammarks",
+          "exammark",
+          "examinationmarks",
+          "examinationmark",
+          "marksobtained",
+          "marksscored",
+          "totalmarks",
+          "totalmark",
+          "totalassessment",
+          "assessmentmarks",
+          "score",
+          "examscore",
+          "testscore",
+        ]),
+      )
+      .filter((value) => value !== null);
+
+    const average = (values) =>
+      values.length
+        ? Number(
+            (
+              values.reduce((sum, value) => sum + value, 0) / values.length
+            ).toFixed(1),
+          )
+        : null;
+
+    // Extract risk-related arrays from the saved AI response.
+    const getRiskStudents = (result) => {
+      if (!result || typeof result !== "object") return [];
+
+      const riskKeys = [
+        "highRiskStudents",
+        "studentsRequiringReview",
+        "atRiskStudents",
+        "studentsAtRisk",
+        "riskStudents",
+      ];
+
+      for (const key of riskKeys) {
+        if (Array.isArray(result[key])) {
+          return result[key];
+        }
+      }
+
+      return [];
+    };
+
+    const latestCompletedAnalysis = completedAnalyses[0] || null;
+
+    const latestResult = latestCompletedAnalysis?.result || null;
+
+    const highRiskCount = latestResult
+      ? getRiskStudents(latestResult).length
+      : 0;
+
+    // Use the most recent saved analysis result for the dashboard.
+    return res.status(200).json({
+      success: true,
+      stats: {
+        totalStudents,
+        uploadedDatasets: datasets.length,
+        totalAnalyses: analyses.length,
+        completedAnalyses: completedAnalyses.length,
+        highRiskStudents: highRiskCount,
+        averageAttendance: average(attendanceValues),
+        averageMarks: average(markValues),
+      },
+      latestAnalysis: latestCompletedAnalysis,
+      recentAnalyses: analyses,
+      datasets: datasets.map((dataset) => ({
+        _id: dataset._id,
+        name: dataset.name || dataset.originalFileName,
+        originalFileName: dataset.originalFileName,
+        totalRows: dataset.totalRows || dataset.records?.length || 0,
+        status: dataset.status,
+        createdAt: dataset.createdAt,
+      })),
+    });
+  } catch (error) {
+    console.error("Manager dashboard error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to load dashboard data.",
+    });
+  }
+}
+
 
 async function runAnalysis(req, res) {
   let analysis = null;
@@ -329,7 +509,7 @@ async function runAnalysis(req, res) {
     const ai = getGemini();
 
     const response = await generateWithRetry(ai, {
-      model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
+      model: process.env.GEMINI_MODEL || "gemini-3.5-flash",
       contents: [
         {
           role: "user",

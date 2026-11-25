@@ -275,7 +275,7 @@ const getAdminDashboard = async (req, res) => {
 const getManagementUsers = async (req, res) => {
   try {
     const users = await User.find({})
-      .select("name email role institution isActive status createdAt")
+      .select("name email role institution isActive status createdAt lastLogin")
       .sort({ createdAt: -1 })
       .lean();
 
@@ -303,7 +303,7 @@ const getManagementUsers = async (req, res) => {
           institution: user.institution?.name || "Not provided",
           isActive: user.isActive === true,
           status: user.status || "active",
-          lastLogin: null,
+          lastLogin: user.lastLogin || null,
           createdAt: user.createdAt || null,
         })),
       },

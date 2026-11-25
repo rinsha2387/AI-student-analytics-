@@ -343,10 +343,14 @@ function InsightCard({ title, description, linkText, onClick }) {
   );
 }
 
-function StatCard({ label, value }) {
+function StatCard({ label, value, valueClassName }) {
   return (
     <div className={`p-5 ${CARD}`}>
-      <p className="break-words text-[22px] font-bold leading-none tracking-[-0.5px] text-[#172f52]">
+      <p
+        className={`break-words text-[22px] font-bold leading-none tracking-[-0.5px] ${
+          valueClassName || "text-[#172f52]"
+        }`}
+      >
         {value}
       </p>
       <p className="mt-2 text-[12px] font-semibold text-[#243c5e]">{label}</p>
@@ -848,7 +852,7 @@ export default function AIAnalysis() {
       <section className={`mb-6 p-6 ${CARD}`}>
         <div className="mb-4 flex items-center gap-2">
           <Sparkles className="text-[#5268d8]" size={18} />
-          <h2 className="text-[16px] font-semibold text-[#172f52]">
+          <h2 className="text-lg font-semibold text-[#172f52]">
             Executive summary
           </h2>
         </div>
@@ -857,7 +861,7 @@ export default function AIAnalysis() {
           {summaryPoints.map((point, index) => (
             <li
               key={`${index}-${point}`}
-              className="flex items-start gap-3 text-[12px] leading-5 text-[#4d607c]"
+              className="flex items-start gap-3 text-sm leading-6 text-[#4d607c]"
             >
               <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#5268d8]" />
               <span>{point}</span>
@@ -865,7 +869,7 @@ export default function AIAnalysis() {
           ))}
         </ul>
 
-        <p className="mt-4 text-[12px] leading-5 text-[#8b9ab0]">
+        <p className="mt-4 text-sm leading-6 text-[#8b9ab0]">
           Generated from the saved analysis for{" "}
           <strong className="font-semibold text-[#344867]">
             {dataset.name || dataset.originalFileName}
@@ -878,12 +882,21 @@ export default function AIAnalysis() {
       {/* Stat cards */}
       <section className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard label="Students analyzed" value={metrics.totalStudents} />
-        <StatCard label="Need review" value={metrics.reviewCount} />
+        <StatCard
+          label="Need review"
+          value={metrics.reviewCount}
+          valueClassName="text-red-600"
+        />
         <StatCard
           label="Attendance concerns"
           value={metrics.attendanceConcerns}
+          valueClassName="text-red-600"
         />
-        <StatCard label="Academic concerns" value={metrics.academicConcerns} />
+        <StatCard
+          label="Academic concerns"
+          value={metrics.academicConcerns}
+          valueClassName="text-red-600"
+        />
         <StatCard
           label="Average attendance"
           value={
@@ -899,6 +912,7 @@ export default function AIAnalysis() {
         <StatCard
           label="Outstanding fees"
           value={formatCurrency(metrics.financialIndicators)}
+          valueClassName="text-red-600"
         />
         <StatCard label="Fees paid" value={formatCurrency(metrics.feesPaid)} />
       </section>
@@ -909,7 +923,7 @@ export default function AIAnalysis() {
           title="Academic insights"
           description={academicInsights}
           linkText="Explore academic data"
-          onClick={() => navigate("/manager/academic-analytics")}
+          onClick={() => navigate("/manager/student-insights")}
         />
 
         <InsightCard

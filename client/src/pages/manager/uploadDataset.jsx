@@ -13,6 +13,7 @@ const UploadDataset = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedDataset, setUploadedDataset] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [analysisResult, setAnalysisResult] = useState(null);
 
   const [selectedFile, setSelectedFile] = useState(null);
@@ -183,6 +184,11 @@ const UploadDataset = () => {
     setError("");
     setMessage("");
     setAnalysisResult(null);
+    setElapsedSeconds(0);
+
+    const timer = setInterval(() => {
+      setElapsedSeconds((seconds) => seconds + 1);
+    }, 1000);
 
     try {
       const response = await fetch(
@@ -214,6 +220,7 @@ const UploadDataset = () => {
     } catch (err) {
       setError(err.message || "Unable to analyze this dataset.");
     } finally {
+      clearInterval(timer);
       setIsAnalyzing(false);
     }
   };
@@ -473,7 +480,7 @@ const UploadDataset = () => {
                   className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-[#5268d8] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#4358c6] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isAnalyzing
-                    ? "Analyzing student data..."
+                    ? `Analyzing student data... ${elapsedSeconds}s`
                     : "Run AI Analysis"}
                 </button>
 
