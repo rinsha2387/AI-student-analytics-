@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { API_URL } from "../../config/api";
 
 /* ------------------------------------------------------------------
    Icons (outside the component so they are not re-created each render)
@@ -188,7 +189,7 @@ const ManagerDashboard = () => {
 
       try {
         const response = await fetch(
-          "http://localhost:5000/api/analysis/dashboard",
+          `${API_URL}/analysis/dashboard`,
           {
             method: "GET",
             headers: { Authorization: `Bearer ${token}` },

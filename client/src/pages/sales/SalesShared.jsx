@@ -1,7 +1,7 @@
 // Small helpers shared by the sales pages.
 import { AlertCircle, FileSpreadsheet, LoaderCircle, RefreshCw } from "lucide-react";
 
-export const API_URL = "http://localhost:5000/api";
+export const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/$/, "");
 
 // ₹12.4L, ₹1.25Cr, ₹85,000
 export const formatShort = (value) => {

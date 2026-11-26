@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../config/api";
 import { useAuth } from "../context/AuthContext";
 import { getHomePath } from "../utils/roleHome";
 
@@ -57,7 +58,7 @@ const Register = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/auth/register/send-otp",
+        `${API_URL}/auth/register/send-otp`,
         {
           method: "POST",
           headers: {
@@ -100,7 +101,7 @@ const Register = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/auth/register/send-otp",
+        `${API_URL}/auth/register/send-otp`,
         {
           method: "POST",
           headers: {
@@ -140,7 +141,7 @@ const Register = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/auth/register/verify-otp",
+        `${API_URL}/auth/register/verify-otp`,
         {
           method: "POST",
           headers: {

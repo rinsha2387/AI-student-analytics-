@@ -4,7 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import AdminTopbar from "../../components/admin/AdminTopbar";
 
-const API_URL = "http://localhost:5000/api/admin/ai-config";
+const API_URL = `${(import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/$/, "")}/admin/ai-config`;
 
 const RESPONSE_FORMATS = [
   { value: "json", label: "Structured JSON" },

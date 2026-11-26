@@ -12,7 +12,7 @@ import {
   Search,
 } from "lucide-react";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/$/, "");
 const PAGE_SIZE = 5;
 
 // Format date: 30 Sep 2026

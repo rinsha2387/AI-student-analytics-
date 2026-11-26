@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 // From client/src/components/manager/ it is "../../context/AuthContext".
 import { useAuth } from "../../context/AuthContext";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/$/, "");
 
 // Small icons used by the topbar
 const Icon = ({ type, size = 18 }) => {

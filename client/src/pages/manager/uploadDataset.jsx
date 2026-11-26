@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { API_URL } from "../../config/api";
 import { useNavigate } from "react-router-dom";
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
@@ -131,7 +132,7 @@ const UploadDataset = () => {
       // This field name must match the backend upload middleware.
       formData.append("file", selectedFile);
 
-      const response = await fetch("http://localhost:5000/api/dataset/upload", {
+      const response = await fetch(`${API_URL}/dataset/upload`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -192,7 +193,7 @@ const UploadDataset = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/analysis/${encodeURIComponent(datasetId)}`,
+        `${API_URL}/analysis/${encodeURIComponent(datasetId)}`,
         {
           method: "POST",
           headers: {

@@ -4,7 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import AdminTopbar from "../../components/admin/AdminTopbar";
 
-const API_URL = "http://localhost:5000/api/admin/ai-prompt";
+const API_URL = `${(import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/$/, "")}/admin/ai-prompt`;
 
 const OUTPUT_SECTIONS = [
   { key: "executiveSummary", label: "Executive Summary" },

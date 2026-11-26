@@ -14,7 +14,7 @@ const DEFAULT_CONFIG = {
   reportFormats: "CSV, PDF",
 };
 
-const API_URL = "http://localhost:5000/api/admin/analysis-config";
+const API_URL = `${(import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/$/, "")}/admin/analysis-config`;
 
 const inputClass =
   "w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-[#1b3154] outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100";

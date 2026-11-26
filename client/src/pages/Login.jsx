@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getHomePath } from "../utils/roleHome";
+import { API_URL } from "../config/api";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -57,7 +58,7 @@ const Login = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/auth/login/send-otp",
+        `${API_URL}/auth/login/send-otp`,
         {
           method: "POST",
           headers: {
@@ -102,7 +103,7 @@ const Login = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/auth/login/send-otp",
+        `${API_URL}/auth/login/send-otp`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -142,7 +143,7 @@ const Login = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/auth/login/verify-otp",
+        `${API_URL}/auth/login/verify-otp`,
         {
           method: "POST",
           headers: {
