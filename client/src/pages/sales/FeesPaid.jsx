@@ -11,7 +11,7 @@ import {
   formatDate,
   formatFull,
   getInitials,
-} from "./salesShared";
+} from "./SalesShared";
 
 const PAGE_SIZE = 10;
 

@@ -15,7 +15,7 @@ import {
   formatFull,
   formatShort,
   getInitials,
-} from "./salesShared";
+} from "./SalesShared";
 
 export default function SalesDashboard() {
   const navigate = useNavigate();
